@@ -1,6 +1,6 @@
 class CPU
 
-  PC : 0 ##Program Counter
+  PC : 0 ##Program Counter#
   AC : 0 ##Accumulator
   XR : 0 ##X Register
   YR : 0 ##Y Register
