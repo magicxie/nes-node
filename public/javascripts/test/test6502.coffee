@@ -161,12 +161,75 @@ describe 'BCD Accumulate', ->
     cpu.Z.should.eql 1
     cpu.AC.should.eql 0x0
 
-  it 'should be: 99 + 1 = 0', ->
-    cpu.SEC()
-    cpu.AC = 0x99
-    cpu.accumulate(0x01)
+describe 'Decimal Mode Tests for ADC', ->
+
+  cpu = new CPU
+  cpu.SED()
+
+  it '00 + 00 and C=0 gives 00 and N=0 V=0 Z=1 C=0', ->
+
+    cpu.CLC()
+    cpu.LDA(0x00)
+    cpu.ADC(0x00)
+
+    cpu.AC.should.eql 0x00
+    cpu.N.should.eql 0
+    cpu.V.should.eql 0
     cpu.Z.should.eql 1
-    cpu.AC.should.eql 0x0
+    cpu.C.should.eql 0
+
+  it '79 + 00 and C=1 gives 80 and N=1 V=1 Z=0 C=0', ->
+
+    cpu.SEC()
+    cpu.LDA(0x79)
+    cpu.ADC(0x00)
+
+    cpu.AC.should.eql 0x80
+    cpu.N.should.eql 1
+    cpu.V.should.eql 1
+    cpu.Z.should.eql 0
+    cpu.C.should.eql 0
+    
+  it '24 + 56 and C=0 gives 80 and N=1 V=1 Z=0 C=0', ->
+    cpu.CLC()
+    cpu.LDA(0x24)
+    cpu.ADC(0x56)
+
+    cpu.AC.should.eql 0x80
+    cpu.N.should.eql 1
+    cpu.V.should.eql 1
+    cpu.Z.should.eql 0
+    cpu.C.should.eql 0
+
+  it '93 + 82 and C=0 gives 75 and N=0 V=1 Z=0 C=1', ->
+
+    cpu.CLC()
+    cpu.LDA(0x93)
+    cpu.ADC(0x82)
+
+    cpu.AC.should.eql 0x75
+    cpu.N.should.eql 0
+    cpu.V.should.eql 1
+    cpu.Z.should.eql 0
+    cpu.C.should.eql 1
+
+  it '89 + 76 and C=0 gives 65 and N=0 V=0 Z=0 C=1', ->
+
+    cpu.CLC()
+    cpu.LDA(0x89)
+    cpu.ADC(0x76)
+
+    cpu.AC.should.eql 0x65
+    cpu.N.should.eql 0
+    cpu.V.should.eql 0
+    cpu.Z.should.eql 0
+    cpu.C.should.eql 1
+
+  it '89 + 76 and C=1 gives 66 and N=0 V=0 Z=1 C=1', ->
+  it '80 + f0 and C=0 gives d0 and N=0 V=1 Z=0 C=1', ->
+  it '80 + fa and C=0 gives e0 and N=1 V=0 Z=0 C=1', ->
+  it '2f + 4f and C=0 gives 74 and N=0 V=0 Z=0 C=0', ->
+  it '6f + 00 and C=1 gives 76 and N=0 V=0 Z=0 C=0', ->
 
 describe 'OPC 69', ->
   cpu = new CPU

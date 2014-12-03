@@ -1,6 +1,6 @@
 class CPU
 
-  PC : 0 ##Program Counter#
+  PC : 0 ##Program Counter
   AC : 0 ##Accumulator
   XR : 0 ##X Register
   YR : 0 ##Y Register
@@ -62,42 +62,90 @@ class CPU
  # operand is address incremented by Y; address hibyte : zero ($00xx); no page transition
   zeropageY :(oper) ->  @ram[(oper + @YR) & 0x00FF]
 
-  #acc
-  accumulate : (oper) ->
-    if (@D is 1)
-      bcd = parseInt(oper.toString 16)
-      if(oper < 0)
-        @AC = parseInt((bcd +  parseInt((@AC.toString 16)) - !@C), 16)
-        if @AC < 0
-          @C = 0
-          @AC = 0x9A + @AC
-          @N = 1
-        else
-          @C = 1
-          @AC = @AC & 0xFF
-      else
-        @AC = parseInt((bcd +  parseInt((@AC.toString 16)) + @C), 16)
-        if @AC > 0x99 then @C = 1 else @C = 0
-        @AC = @AC & 0xFF
+  addressing : () ->
+    if arguments.length == 2
+        return arguments[1]
     else
-      if(oper < 0)
-        @AC = oper + @AC - !@C
-        if @AC < 0x80 && @AC >= 0
-          @C = 0
-          @N = 1
-          @V = 0
-        else if @AC >= 0x80 && @AC <= 0xFF
-          @C = 1
-          @N = 1
-          @V = 0
-        else
-          @V = 1
-      else
-        @AC = oper + @AC + @C
-        if @AC > 0xFF then @C = 1 else @C = 0
-      @AC = @AC & 0xFF
-    if @AC == 0 then @Z = 1 else @Z = 0
-    console.log @Z,@AC
+      return this.immediate
+
+  #acc
+
+  #补码
+  toTwosComplement : (sign) ->
+    #负数
+    if (sign > 0x7F)
+      return sign ^ 0xFF + 1;
+    else
+      return sign;
+
+  #反码
+  toOnesComplement : (sign) ->
+    #负数
+    if (sign > 0x7F)
+      return sign ^ 0xFF
+    else
+      return sign;
+
+  bcdAccumulate : (src, dst) ->
+
+    tcSrc = this.toTwosComplement(src)
+    tcDst = this.toTwosComplement(dst)
+
+    console.log tcSrc,tcDst
+
+    srcH = (tcSrc & 0xF0)/0x10;
+    srcL = tcSrc & 0x0F;
+
+    dstH = (tcDst & 0xF0)/0x10;
+    dstL = tcDst & 0x0F;
+
+    console.log 'srcH',srcH
+    console.log 'srcL',srcL
+    console.log 'dstH',dstH
+    console.log 'dstL',dstL
+
+    tmpL = srcL + dstL;
+    carryL = 0;
+    adjustL = false
+
+    console.log 'tmpL',tmpL
+
+    if tmpL > 0xF
+      carryL = 1
+      adjustL = true
+
+    if tmpL > 0x9
+      adjustL = true
+
+    tmpH = srcH + dstH + carryL;
+    carryH = 0;
+    adjustH = false
+
+    if tmpH > 0xF
+      carryH = 1
+      adjustH = true
+
+    console.log 'tmpH',tmpH
+
+    tmp = tmpH * 0x10 + (tmpL & 0x0F);
+
+    if tmp == 0
+      @Z = 1
+    if adjustL
+      tmp +=  0x06
+    if adjustH
+      tmp +=  0x60
+
+    console.log 'tmp',tmp
+
+    return tmp
+
+
+  accumulate : (src, dst) ->
+    if (@D is 1)
+      return this.bcdAccumulate(src, dst)
+    else
+      return src + dst
 
   binary2bcd : (oper) ->
      parseInt(oper.toString 16)
@@ -114,8 +162,10 @@ class CPU
   CLD : () ->
     @D = 0
 
-  LDA : (oper, addressing) ->
-    @AC = addressing(oper)
+  LDA : (oper) ->
+
+    @AC = this.addressing(arguments)(oper)
+
 
   ###
   ADC  Add Memory to Accumulator with Carry
@@ -134,8 +184,29 @@ class CPU
      (indirect,X)  ADC (oper,X)  61    2     6
      (indirect),Y  ADC (oper),Y  71    2     5*
   ###
-  ADC : (oper, addressing) ->
-    addressing(oper)
+  ADC : (oper) ->
+
+    oper = this.addressing(arguments)(oper)
+
+    @AC = this.accumulate(oper, @AC)
+
+    console.log '@@AC',@AC
+
+    if @C == 1 then @AC = this.accumulate(@AC, @C)
+    @C = if @AC > 0xFF then  1 else 0;
+    @N = if (@AC & 0x80) == 0x80 then 1 else 0;
+    @Z = if @AC == 0 then 1 else 0;
+    H4b = @AC / 0x10
+    @V = if H4b >= -8 & H4b <= 7 then 0 else 1;
+    console.log('@H4b is' + H4b.toString(16))
+    console.log '@V',@V
+    console.log '@C',@C
+    console.log '@N',@N
+    console.log '@Z',@Z
+
+    @AC = @AC & 0xFF;
+
+    console.log '@AC',@AC
 
   SBC : (oper, addressing) ->
     addressing(oper)
