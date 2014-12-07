@@ -111,8 +111,8 @@ class CPU
     dstH = (tcDst & 0xF0)/0x10;
     dstL = tcDst & 0x0F;
 
-    console.log 'srcH',srcH,'srcL',srcL
-    console.log 'dstH',dstH,'dstL',dstL,'is really',this.toH4bitTowsComplement(dstH), 'and',this.toH4bitTowsComplement(dstL)
+    console.log 'srcH',srcH,'srcL',srcL,'is really',this.toH4bitTowsComplement(srcH), 'and',srcL
+    console.log 'dstH',dstH,'dstL',dstL,'is really',this.toH4bitTowsComplement(dstH), 'and',dstL
 
     tmpL = srcL + dstL + carry;
     carryL = 0;
@@ -120,14 +120,12 @@ class CPU
 
     console.log 'tmpL=',srcL,'+',dstL,'+',carry,'=',tmpL
 
-    if tmpL > 0xF
+    if tmpL > 0x9
+      console.log 'Carry from low 4 bit =',tmpL
       carryL = 1
       adjustL = true
 
-    if tmpL > 0x9
-      adjustL = true
-
-    tmpH = this.toH4bitTowsComplement(dstH) + this.toH4bitTowsComplement(dstL) + carryL;
+    tmpH = this.toH4bitTowsComplement(srcH) + this.toH4bitTowsComplement(dstH) + carryL;
     carryH = 0;
     adjustH = false
 
@@ -135,9 +133,11 @@ class CPU
       carryH = 1
       adjustH = true
 
-    console.log 'tmpH=',this.toH4bitTowsComplement(dstH),'+',this.toH4bitTowsComplement(dstL),'+',carryL,'=',tmpH
+    console.log 'tmpH=',this.toH4bitTowsComplement(srcH),'+',this.toH4bitTowsComplement(dstH),'+',carryL,'=',tmpH.toString(16)
 
-    tmp = tmpH * 0x10 + (tmpL & 0x0F);
+    tmp = tmpH * 0x10 + (tmpL % 0x0a);
+
+    console.log 'tmp=',tmpH,'*10+',(tmpL % 0x0a),'=',tmp.toString(16)
 
     if tmp == 0
       @Z = 1
@@ -145,9 +145,6 @@ class CPU
 #      tmp +=  0x06
 #    if adjustH
 #      tmp +=  0x60
-
-    console.log 'tmp',tmp
-
     return tmp
 
 
