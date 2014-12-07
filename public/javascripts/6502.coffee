@@ -30,6 +30,9 @@ class CPU
     for x in [0..@ramSize]
       @ram[x] = 0;
 
+  printRegisters : ()->
+    console.log 'AC=',@AC,'(= BDC',@AC.toString(16),') V=',@V,'C=',@C, 'N=',@N,'Z=',@Z
+
  #addressing mode:
  #A		....	Accumulator	 	OPC A	 	operand is AC
   accumulator :(oper) -> @AC
@@ -86,12 +89,21 @@ class CPU
     else
       return sign;
 
-  bcdAccumulate : (src, dst) ->
+  toH4bitTowsComplement : (sign) ->
+    #高四位补码
+    if (sign > 0x7)
+      return sign - 16;
+    else
+      return sign;
+
+  bcdAccumulate : (src, dst, carry) ->
+
+    console.log 'Start bcd accumulation'
 
     tcSrc = this.toTwosComplement(src)
     tcDst = this.toTwosComplement(dst)
 
-    console.log tcSrc,tcDst
+    console.log 'Accumulate', tcSrc,'to',tcDst,'with', carry
 
     srcH = (tcSrc & 0xF0)/0x10;
     srcL = tcSrc & 0x0F;
@@ -99,16 +111,14 @@ class CPU
     dstH = (tcDst & 0xF0)/0x10;
     dstL = tcDst & 0x0F;
 
-    console.log 'srcH',srcH
-    console.log 'srcL',srcL
-    console.log 'dstH',dstH
-    console.log 'dstL',dstL
+    console.log 'srcH',srcH,'srcL',srcL
+    console.log 'dstH',dstH,'dstL',dstL,'is really',this.toH4bitTowsComplement(dstH), 'and',this.toH4bitTowsComplement(dstL)
 
-    tmpL = srcL + dstL;
+    tmpL = srcL + dstL + carry;
     carryL = 0;
     adjustL = false
 
-    console.log 'tmpL',tmpL
+    console.log 'tmpL=',srcL,'+',dstL,'+',carry,'=',tmpL
 
     if tmpL > 0xF
       carryL = 1
@@ -117,7 +127,7 @@ class CPU
     if tmpL > 0x9
       adjustL = true
 
-    tmpH = srcH + dstH + carryL;
+    tmpH = this.toH4bitTowsComplement(dstH) + this.toH4bitTowsComplement(dstL) + carryL;
     carryH = 0;
     adjustH = false
 
@@ -125,25 +135,25 @@ class CPU
       carryH = 1
       adjustH = true
 
-    console.log 'tmpH',tmpH
+    console.log 'tmpH=',this.toH4bitTowsComplement(dstH),'+',this.toH4bitTowsComplement(dstL),'+',carryL,'=',tmpH
 
     tmp = tmpH * 0x10 + (tmpL & 0x0F);
 
     if tmp == 0
       @Z = 1
-    if adjustL
-      tmp +=  0x06
-    if adjustH
-      tmp +=  0x60
+#    if adjustL
+#      tmp +=  0x06
+#    if adjustH
+#      tmp +=  0x60
 
     console.log 'tmp',tmp
 
     return tmp
 
 
-  accumulate : (src, dst) ->
+  accumulate : (src, dst, carry) ->
     if (@D is 1)
-      return this.bcdAccumulate(src, dst)
+      return this.bcdAccumulate(src, dst, carry)
     else
       return src + dst
 
@@ -188,25 +198,21 @@ class CPU
 
     oper = this.addressing(arguments)(oper)
 
-    @AC = this.accumulate(oper, @AC)
+    @AC = this.accumulate(oper, @AC, @C)
 
-    console.log '@@AC',@AC
+    console.log '@AC',@AC
 
-    if @C == 1 then @AC = this.accumulate(@AC, @C)
     @C = if @AC > 0xFF then  1 else 0;
     @N = if (@AC & 0x80) == 0x80 then 1 else 0;
     @Z = if @AC == 0 then 1 else 0;
     H4b = @AC / 0x10
     @V = if H4b >= -8 & H4b <= 7 then 0 else 1;
-    console.log('@H4b is' + H4b.toString(16))
-    console.log '@V',@V
-    console.log '@C',@C
-    console.log '@N',@N
-    console.log '@Z',@Z
+    if @V == 1
+      console.warn('High 4 bit', H4b.toString(16), 'is not in rage(-8~7). Overflow!!')
+    console.log('@H4b is', H4b.toString(16),)
 
     @AC = @AC & 0xFF;
-
-    console.log '@AC',@AC
+    this.printRegisters()
 
   SBC : (oper, addressing) ->
     addressing(oper)

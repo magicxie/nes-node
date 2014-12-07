@@ -55,6 +55,10 @@
       return _results;
     };
 
+    CPU.prototype.printRegisters = function() {
+      return console.log('AC=', this.AC, '(= BDC', this.AC.toString(16), ') V=', this.V, 'C=', this.C, 'N=', this.N, 'Z=', this.Z);
+    };
+
     CPU.prototype.accumulator = function(oper) {
       return this.AC;
     };
@@ -131,23 +135,30 @@
       }
     };
 
-    CPU.prototype.bcdAccumulate = function(src, dst) {
+    CPU.prototype.toH4bitTowsComplement = function(sign) {
+      if (sign > 0x7) {
+        return sign - 16;
+      } else {
+        return sign;
+      }
+    };
+
+    CPU.prototype.bcdAccumulate = function(src, dst, carry) {
       var adjustH, adjustL, carryH, carryL, dstH, dstL, srcH, srcL, tcDst, tcSrc, tmp, tmpH, tmpL;
+      console.log('Start bcd accumulation');
       tcSrc = this.toTwosComplement(src);
       tcDst = this.toTwosComplement(dst);
-      console.log(tcSrc, tcDst);
+      console.log('Accumulate', tcSrc, 'to', tcDst, 'with', carry);
       srcH = (tcSrc & 0xF0) / 0x10;
       srcL = tcSrc & 0x0F;
       dstH = (tcDst & 0xF0) / 0x10;
       dstL = tcDst & 0x0F;
-      console.log('srcH', srcH);
-      console.log('srcL', srcL);
-      console.log('dstH', dstH);
-      console.log('dstL', dstL);
-      tmpL = srcL + dstL;
+      console.log('srcH', srcH, 'srcL', srcL);
+      console.log('dstH', dstH, 'dstL', dstL, 'is really', this.toH4bitTowsComplement(dstH), 'and', this.toH4bitTowsComplement(dstL));
+      tmpL = srcL + dstL + carry;
       carryL = 0;
       adjustL = false;
-      console.log('tmpL', tmpL);
+      console.log('tmpL=', srcL, '+', dstL, '+', carry, '=', tmpL);
       if (tmpL > 0xF) {
         carryL = 1;
         adjustL = true;
@@ -155,31 +166,25 @@
       if (tmpL > 0x9) {
         adjustL = true;
       }
-      tmpH = srcH + dstH + carryL;
+      tmpH = this.toH4bitTowsComplement(dstH) + this.toH4bitTowsComplement(dstL) + carryL;
       carryH = 0;
       adjustH = false;
       if (tmpH > 0xF) {
         carryH = 1;
         adjustH = true;
       }
-      console.log('tmpH', tmpH);
+      console.log('tmpH=', this.toH4bitTowsComplement(dstH), '+', this.toH4bitTowsComplement(dstL), '+', carryL, '=', tmpH);
       tmp = tmpH * 0x10 + (tmpL & 0x0F);
       if (tmp === 0) {
         this.Z = 1;
-      }
-      if (adjustL) {
-        tmp += 0x06;
-      }
-      if (adjustH) {
-        tmp += 0x60;
       }
       console.log('tmp', tmp);
       return tmp;
     };
 
-    CPU.prototype.accumulate = function(src, dst) {
+    CPU.prototype.accumulate = function(src, dst, carry) {
       if (this.D === 1) {
-        return this.bcdAccumulate(src, dst);
+        return this.bcdAccumulate(src, dst, carry);
       } else {
         return src + dst;
       }
@@ -231,23 +236,19 @@
     CPU.prototype.ADC = function(oper) {
       var H4b;
       oper = this.addressing(arguments)(oper);
-      this.AC = this.accumulate(oper, this.AC);
-      console.log('@@AC', this.AC);
-      if (this.C === 1) {
-        this.AC = this.accumulate(this.AC, this.C);
-      }
+      this.AC = this.accumulate(oper, this.AC, this.C);
+      console.log('@AC', this.AC);
       this.C = this.AC > 0xFF ? 1 : 0;
       this.N = (this.AC & 0x80) === 0x80 ? 1 : 0;
       this.Z = this.AC === 0 ? 1 : 0;
       H4b = this.AC / 0x10;
       this.V = H4b >= -8 & H4b <= 7 ? 0 : 1;
-      console.log('@H4b is' + H4b.toString(16));
-      console.log('@V', this.V);
-      console.log('@C', this.C);
-      console.log('@N', this.N);
-      console.log('@Z', this.Z);
+      if (this.V === 1) {
+        console.warn('High 4 bit', H4b.toString(16), 'is not in rage(-8~7). Overflow!!');
+      }
+      console.log('@H4b is', H4b.toString(16));
       this.AC = this.AC & 0xFF;
-      return console.log('@AC', this.AC);
+      return this.printRegisters();
     };
 
     CPU.prototype.SBC = function(oper, addressing) {
