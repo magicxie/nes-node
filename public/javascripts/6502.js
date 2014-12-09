@@ -171,9 +171,9 @@
         carryH = 1;
         adjustH = true;
       }
-      console.log('tmpH=', this.toH4bitTowsComplement(srcH), '+', this.toH4bitTowsComplement(dstH), '+', carryL, '=', tmpH.toString(16));
+      console.log('tmpH=', this.toH4bitTowsComplement(srcH), '+', this.toH4bitTowsComplement(dstH), '+', carryL, '=', tmpH.toString(10));
       tmp = tmpH * 0x10 + (tmpL % 0x0a);
-      console.log('tmp=', tmpH, '*10+', tmpL % 0x0a, '=', tmp.toString(16));
+      console.log('tmp=', tmpH, 'x 10 +', tmpL % 0x0a, '=', tmp.toString(10));
       if (tmp === 0) {
         this.Z = 1;
       }

@@ -73,7 +73,7 @@ class CPU
 
   #acc
 
-  #补码
+  #补码,改为模
   toTwosComplement : (sign) ->
     #负数
     if (sign > 0x7F)
@@ -128,16 +128,16 @@ class CPU
     tmpH = this.toH4bitTowsComplement(srcH) + this.toH4bitTowsComplement(dstH) + carryL;
     carryH = 0;
     adjustH = false
-
+    #高位若负数须转换为原码
     if tmpH > 0xF
       carryH = 1
       adjustH = true
 
-    console.log 'tmpH=',this.toH4bitTowsComplement(srcH),'+',this.toH4bitTowsComplement(dstH),'+',carryL,'=',tmpH.toString(16)
+    console.log 'tmpH=',this.toH4bitTowsComplement(srcH),'+',this.toH4bitTowsComplement(dstH),'+',carryL,'=',tmpH.toString(10)
 
     tmp = tmpH * 0x10 + (tmpL % 0x0a);
 
-    console.log 'tmp=',tmpH,'*10+',(tmpL % 0x0a),'=',tmp.toString(16)
+    console.log 'tmp=',tmpH,'x 10 +',(tmpL % 0x0a),'=',tmp.toString(10)
 
     if tmp == 0
       @Z = 1
