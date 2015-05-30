@@ -1,7 +1,7 @@
 should = require 'should'
-cpu6502 = require '../src/2a03'
+cpu2a03 = require '../src/2a03'
 
-CPU = cpu6502.CPU
+CPU = cpu2a03.CPU
 
 describe 'CPU init', ->
   it 'should has a 16k ram', ->
@@ -105,8 +105,7 @@ describe 'Binary Accumulate', ->
   it 'should be: 88 + 70 + 1 = 159', ->
     cpu.SEC()
     cpu.AC = 0x58
-    cpu.accumulate(0x46,cpu.AC, CPU.C)
-    cpu.AC.should.eql 159
+    cpu.accumulate(0x46,cpu.AC, cpu.C).should.eql 159
 
 
 describe 'OPC 69', ->
