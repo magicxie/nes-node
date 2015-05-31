@@ -1,5 +1,3 @@
 dependencies:
-  override:
-    - npm install --dev
   post:
     - grunt
