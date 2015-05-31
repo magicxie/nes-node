@@ -37,43 +37,72 @@ class CPU
   printRegisters : ()->
     console.log 'AC=',@AC,'(= BDC',@AC.toString(16),') V=',@V,'C=',@C, 'N=',@N,'Z=',@Z
 
- #addressing mode:
- #A		....	Accumulator	 	OPC A	 	operand is AC
-  accumulator :(oper) -> @AC
- #abs		....	absolute	 	OPC $HHLL	 	operand is address $HHLL
-  absolute    :(oper) -> @ram[oper]
- #abs,X		....	absolute, X-indexed	 	OPC $HHLL,X	 	operand is address incremented by X with carry
-  absoluteX   :(oper) -> @ram[oper + @XR]
- #abs,Y		....	absolute, Y-indexed	 	OPC $HHLL,Y	 	operand is address incremented by Y with carry
-  absoluteY   :(oper) -> @ram[oper + @YR]
- # #		....	immediate	 	OPC #$BB	 	operand is byte (BB)
-  immediate :(oper) -> oper
- #impl		....	implied	 	OPC	 	operand implied
-  implied :(oper) -> @AC
- #ind		....	indirect	 	OPC ($HHLL)	 	operand is effective address; effective address is value of address
-  indirect :(oper) -> @ram[@ram[oper]]
- #X,ind		....	X-indexed, indirect	 	OPC ($BB,X)
- # operand is effective zeropage address; effective address is byte (BB) incremented by X without carry
-  indirectX :(oper) ->  @ram[@ram[(oper  & 0x00FF) + @XR]]
- #ind,Y		....	indirect, Y-indexed	 	OPC ($LL),Y
- # operand is effective address incremented by Y with carry; effective address is word at zeropage address
-  indirectY :(oper) ->  @ram[@ram[(oper  & 0x00FF) + @YR]]
- #rel		....	relative	 	OPC $BB	 	branch target is PC + offset (BB), bit 7 signifies negative offset
-  relative :(oper) -> @ram[@PC + oper]
- #zpg		....	zeropage	 	OPC $LL	 	operand is of address; address hibyte : zero ($00xx)
-  zeropage :(oper) -> @ram[oper & 0x00FF]
- #zpg,X		....	zeropage, X-indexed	 	OPC $LL,X
- # operand is address incremented by X; address hibyte : zero ($00xx); no page transition
-  zeropageX :(oper) ->  @ram[(oper + @XR) & 0x00FF]
- #zpg,Y		....	zeropage, Y-indexed	 	OPC $LL,Y
- # operand is address incremented by Y; address hibyte : zero ($00xx); no page transition
-  zeropageY :(oper) ->  @ram[(oper + @YR) & 0x00FF]
+  ADDRESSING_MODE : {
+    ACCUMULATOR : 'ACC',
+    IMMEDIATE : 'IMM',
+    IMPLIED : 'IMP'
+  }
+
+  #addressing mode:
+  #A		....	Accumulator	 	OPC A	 	operand is AC
+  accumulator :() -> {operand : @AC, address : @ADDRESSING_MODE.ACCUMULATOR}
+
+#abs		....	absolute	 	OPC $HHLL	 	operand is address $HHLL
+  absolute    :(oper) -> {operand : @ram[oper], address : oper}
+
+#abs,X		....	absolute, X-indexed	 	OPC $HHLL,X	 	operand is address incremented by X with carry
+  absoluteX   :(oper) -> {operand : @ram[oper + @XR], address : oper + @XR}
+
+#abs,Y		....	absolute, Y-indexed	 	OPC $HHLL,Y	 	operand is address incremented by Y with carry
+  absoluteY   :(oper) -> {operand : @ram[oper + @YR], address : oper + @YR}
+
+# #		....	immediate	 	OPC #$BB	 	operand is byte (BB)
+  immediate :(oper) -> {operand : oper, address : @ADDRESSING_MODE.IMMEDIATE}
+
+#impl		....	implied	 	OPC	 	operand implied
+  implied : (oper) -> {operand : @AC, address : @ADDRESSING_MODE.IMPLIED}
+
+#ind		....	indirect	 	OPC ($HHLL)	 	operand is effective address; effective address is value of address
+  indirect :(oper) -> {operand : @ram[@ram[oper]], address : @ram[oper]}
+
+#X,ind		....	X-indexed, indirect	 	OPC ($BB,X)
+  # operand is effective zeropage address; effective address is byte (BB) incremented by X without carry
+  indirectX :(oper) ->  {operand : @ram[@ram[(oper  & 0x00FF) + @XR]], address : @ram[(oper  & 0x00FF) + @XR]}
+
+#ind,Y		....	indirect, Y-indexed	 	OPC ($LL),Y
+  # operand is effective address incremented by Y with carry; effective address is word at zeropage address
+  indirectY :(oper) ->  {operand : @ram[@ram[(oper  & 0x00FF) + @YR]], address : @ram[(oper  & 0x00FF) + @YR]}
+
+#rel		....	relative	 	OPC $BB	 	branch target is PC + offset (BB), bit 7 signifies negative offset
+  relative :(oper) -> {operand : @ram[@PC + oper], address : @PC + oper}
+
+#zpg		....	zeropage	 	OPC $LL	 	operand is of address; address hibyte : zero ($00xx)
+  zeropage :(oper) -> {operand : @ram[oper & 0x00FF], address : oper & 0x00FF}
+
+#zpg,X		....	zeropage, X-indexed	 	OPC $LL,X
+  # operand is address incremented by X; address hibyte : zero ($00xx); no page transition
+  zeropageX :(oper) ->  {operand : @ram[(oper + @XR) & 0x00FF], address : oper + @XR};
+
+  #zpg,Y		....	zeropage, Y-indexed	 	OPC $LL,Y
+  # operand is address incremented by Y; address hibyte : zero ($00xx); no page transition
+  zeropageY :(oper) ->  {operand : @ram[(oper + @YR) & 0x00FF], address : oper + @YR};
 
   addressing : () ->
     if arguments.length == 2
         return arguments[1]
     else
       return this.immediate
+
+  ##cpu step info
+  @stepInfo : {
+    operand : 0x00,
+    addressMode : this.immediate
+  }
+
+  step : () ->
+    operand = @ram[@PC]
+    @stepInfo.operand = operand
+
 
   accumulate : (src, dst, carry) ->
       return src + dst + carry;
@@ -85,8 +114,8 @@ class CPU
     @N = if (oper & 0x80) != 0 then 1 else 0;
 
   setZN : (oper) ->
-    setZ(oper)
-    setN(oper)
+    this.setZ(oper)
+    this.setN(oper)
 
   SED : () ->
     @D = 1
@@ -122,17 +151,17 @@ class CPU
      (indirect,X)  ADC (oper,X)  61    2     6
      (indirect),Y  ADC (oper),Y  71    2     5*
   ###
-  ADC : (oper) ->
+  ADC : (stepInfo) ->
 
-    oper = this.addressing(arguments)(oper)
+    operand = stepInfo.operand
 
-    @AC = this.accumulate(oper, @AC, @C)
+    @AC = this.accumulate(operand, @AC, @C)
 
     console.log '@AC',@AC
 
     @C = if @AC > 0xFF then 1 else 0;
 
-    setZN(@AC)
+    this.setZN(@AC)
 
     H4b = @AC / 0x10
     @V = if H4b >= -8 & H4b <= 7 then 0 else 1;
@@ -144,7 +173,74 @@ class CPU
 
     this.printRegisters()
 
-  SBC : (oper, addressing) ->
-    addressing(oper)
+  SBC : (stepInfo) ->
 
-exports.CPU = CPU
+    operand = - stepInfo.operand
+
+    @AC = this.accumulate(operand, @AC, @C)
+
+    console.log '@AC',@AC
+
+    @C = if @AC > 0xFF then 1 else 0;
+
+    this.setZN(@AC)
+
+    H4b = @AC / 0x10
+    @V = if H4b >= -8 & H4b <= 7 then 0 else 1;
+    if @V == 1
+      console.warn('High 4 bit', H4b.toString(16), 'is not in rage(-8~7). Overflow!!')
+    console.log('@H4b is', H4b.toString(16))
+
+    @AC = @AC & 0xFF;
+
+
+  ###
+  AND Memory with Accumulator
+
+     A AND M -> A                     N Z C I D V
+                                      + + - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     immidiate     AND #oper     29    2     2
+     zeropage      AND oper      25    2     3
+     zeropage,X    AND oper,X    35    2     4
+     absolute      AND oper      2D    3     4
+     absolute,X    AND oper,X    3D    3     4*
+     absolute,Y    AND oper,Y    39    3     4*
+     (indirect,X)  AND (oper,X)  21    2     6
+     (indirect),Y  AND (oper),Y  31    2     5*
+  ###
+  AND : (oper) ->
+    oper = this.addressing(arguments)(oper)
+    @AC = @AC & oper & 0xFF
+    this.setZN(@AC)
+
+  ###
+  ASL  Shift Left One Bit (Memory or Accumulator)
+
+     C <- [76543210] <- 0             N Z C I D V
+                                      + + + - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     accumulator   ASL A         0A    1     2
+     zeropage      ASL oper      06    2     5
+     zeropage,X    ASL oper,X    16    2     6
+     absolute      ASL oper      0E    3     6
+     absolute,X    ASL oper,X    1E    3     7
+   ###
+  ASL : (oper) ->
+
+    addressingMode = this.addressing(arguments);
+    oper = addressingMode(oper)
+
+    if addressingMode == accumulator
+      console.log(addressingMode)
+
+    else
+
+
+
+
+  exports.CPU = CPU
