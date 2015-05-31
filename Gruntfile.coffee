@@ -27,8 +27,16 @@ module.exports = (grunt) ->
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'src/<%= pkg.name %>.js',
+        src: 'src/2a03.js',
         dest: 'build/<%= pkg.name %>.min.js'
+      }
+    },
+    coveralls: {
+      options: {
+        dryRun : true,
+        coverageDir: 'src',
+        force: true,
+        recursive: true
       }
     }
   }
@@ -36,7 +44,9 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.registerTask 'compile', ['coffee']
 
+  grunt.loadNpmTasks 'grunt-coveralls';
+
  # Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks 'grunt-contrib-uglify';
   # Default task(s).
-  grunt.registerTask 'default', ['compile','uglify'];
+  grunt.registerTask 'default', ['compile','coveralls','uglify'];

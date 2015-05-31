@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "grunt-contrib-coffee": "^0.13.0",
+    "grunt-coveralls": "^1.0.0",
     "mocha": "^2.2.5",
     "should": "^6.0.3"
   }
