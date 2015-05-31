@@ -211,9 +211,9 @@ class CPU
      (indirect,X)  AND (oper,X)  21    2     6
      (indirect),Y  AND (oper),Y  31    2     5*
   ###
-  AND : (oper) ->
-    oper = this.addressing(arguments)(oper)
-    @AC = @AC & oper & 0xFF
+  AND : (stepInfo) ->
+    operand = stepInfo.operand
+    @AC = @AC & operand & 0xFF
     this.setZN(@AC)
 
   ###
@@ -230,15 +230,22 @@ class CPU
      absolute      ASL oper      0E    3     6
      absolute,X    ASL oper,X    1E    3     7
    ###
-  ASL : (oper) ->
+  ASL : (stepInfo) ->
 
-    addressingMode = this.addressing(arguments);
-    oper = addressingMode(oper)
+    operand = stepInfo.operand
+    addressingMode = stepInfo.address
 
-    if addressingMode == accumulator
-      console.log(addressingMode)
+    @C = (operand >> 7) & 1
+    operand <<= 1
 
+    console.log('1',addressingMode)
+
+    if addressingMode == @ADDRESSING_MODE.ACCUMULATOR
+      @AC = operand
     else
+      @ram[stepInfo.address]
+
+    this.setZN operand
 
 
 

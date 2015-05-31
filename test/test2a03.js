@@ -119,7 +119,7 @@
     });
   });
 
-  describe('ADC', function() {
+  describe('SBC', function() {
     var cpu;
     cpu = new CPU;
     return it('88 - 86  = 2', function() {
@@ -127,9 +127,19 @@
       cpu.AC = 0x58;
       cpu.SBC({
         operand: 0x57,
-        addressMode: cpu.ADDRESSING_MODE.IMPLIED
+        address: cpu.ADDRESSING_MODE.IMPLIED
       });
       return cpu.AC.should.be.eql(2);
+    });
+  });
+
+  describe('ASL', function() {
+    var cpu;
+    cpu = new CPU;
+    return it('Accumulator 88 << 1 = 176', function() {
+      cpu.AC = 0x58;
+      cpu.ASL(cpu.accumulator());
+      return cpu.AC.should.be.eql(0xB0);
     });
   });
 

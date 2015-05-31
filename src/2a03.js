@@ -283,9 +283,10 @@
        (indirect),Y  AND (oper),Y  31    2     5*
      */
 
-    CPU.prototype.AND = function(oper) {
-      oper = this.addressing(arguments)(oper);
-      this.AC = this.AC & oper & 0xFF;
+    CPU.prototype.AND = function(stepInfo) {
+      var operand;
+      operand = stepInfo.operand;
+      this.AC = this.AC & operand & 0xFF;
       return this.setZN(this.AC);
     };
 
@@ -305,15 +306,19 @@
        absolute,X    ASL oper,X    1E    3     7
      */
 
-    CPU.prototype.ASL = function(oper) {
-      var addressingMode;
-      addressingMode = this.addressing(arguments);
-      oper = addressingMode(oper);
-      if (addressingMode === accumulator) {
-        return console.log(addressingMode);
+    CPU.prototype.ASL = function(stepInfo) {
+      var addressingMode, operand;
+      operand = stepInfo.operand;
+      addressingMode = stepInfo.address;
+      this.C = (operand >> 7) & 1;
+      operand <<= 1;
+      console.log('1', addressingMode);
+      if (addressingMode === this.ADDRESSING_MODE.ACCUMULATOR) {
+        this.AC = operand;
       } else {
-
+        this.ram[stepInfo.address];
       }
+      return this.setZN(operand);
     };
 
     exports.CPU = CPU;

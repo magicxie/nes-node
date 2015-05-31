@@ -107,15 +107,24 @@ describe 'Binary Accumulate', ->
     cpu.AC = 0x58
     cpu.accumulate(0x46,cpu.AC, cpu.C).should.eql 159
 
-describe 'ADC', ->
+describe 'SBC', ->
 
   cpu = new CPU
 
   it '88 - 86  = 2', ->
     cpu.SEC()
     cpu.AC = 0x58
-    cpu.SBC {operand : 0x57, addressMode:cpu.ADDRESSING_MODE.IMPLIED}
+    cpu.SBC {operand : 0x57, address:cpu.ADDRESSING_MODE.IMPLIED}
     cpu.AC.should.be.eql 2
+
+describe 'ASL', ->
+
+  cpu = new CPU
+
+  it 'Accumulator 88 << 1 = 176', ->
+    cpu.AC = 0x58
+    cpu.ASL cpu.accumulator()
+    cpu.AC.should.be.eql 0xB0
 
 describe 'OPC 69', ->
   cpu = new CPU
