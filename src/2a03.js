@@ -321,6 +321,18 @@
       return this.setZN(operand);
     };
 
+    CPU.prototype.BCC = function(stepInfo) {
+      if (this.C === 0) {
+        return this.PC = stepInfo.address;
+      }
+    };
+
+    CPU.prototype.BCS = function(stepInfo) {
+      if (this === 1) {
+        return this.PC = stepInfo.address;
+      }
+    };
+
     exports.CPU = CPU;
 
     return CPU;
