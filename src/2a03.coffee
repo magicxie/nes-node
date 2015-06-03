@@ -247,7 +247,14 @@ class CPU
 
     this.setZN operand
 
+  BCC : (stepInfo) ->
+
+    if @C == 0
+      @PC = stepInfo.address;
 
 
+  BCS : (stepInfo)->
+    if @ == 1
+      @PC = stepInfo.address;
 
   exports.CPU = CPU
