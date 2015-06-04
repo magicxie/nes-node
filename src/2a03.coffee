@@ -21,13 +21,16 @@ class CPU
   ram : []
   ramSize : 0xFFFF
 
+  cycles = 0;
+
   constructor : ->
     for x in [0..@ramSize]
       @ram[x] = 0;
 
   #reset pc
   reset :() ->
-    @PC = 0; 
+    @PC = 0;
+    cycles = 0;
 
   #clear ram
   clear :() ->
@@ -96,12 +99,13 @@ class CPU
   ##cpu step info
   @stepInfo : {
     operand : 0x00,
-    addressMode : this.immediate
+    addressMode : null
   }
 
   step : () ->
     operand = @ram[@PC]
     @stepInfo.operand = operand
+    @stepInfo.addressMode = this.immediate(operand)
 
 
   accumulate : (src, dst, carry) ->
@@ -116,6 +120,10 @@ class CPU
   setZN : (oper) ->
     this.setZ(oper)
     this.setN(oper)
+
+  addCycleOnBranch : (stepInfo) ->
+    @cycles += 1;
+
 
   SED : () ->
     @D = 1
@@ -233,28 +241,115 @@ class CPU
   ASL : (stepInfo) ->
 
     operand = stepInfo.operand
-    addressingMode = stepInfo.address
+    addressingMode = stepInfo.addressMode
 
     @C = (operand >> 7) & 1
     operand <<= 1
 
-    console.log('1',addressingMode)
+    console.log(stepInfo,'1',addressingMode.address)
 
-    if addressingMode == @ADDRESSING_MODE.ACCUMULATOR
+    if addressingMode.address == @ADDRESSING_MODE.ACCUMULATOR
       @AC = operand
     else
-      @ram[stepInfo.address]
+      @ram[operand]
 
     this.setZN operand
 
+  ###
+    BCC  Branch on Carry Clear
+
+     branch on C = 0                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BCC oper      90    2     2**
+
+  ###
   BCC : (stepInfo) ->
 
     if @C == 0
-      @PC = stepInfo.address;
+      @PC = stepInfo.addressMode.address;
+      addCycleOnBranch stepInfo
 
+  ###
+    BCS  Branch on Carry Set
 
+     branch on C = 1                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BCS oper      B0    2     2**
+  ###
   BCS : (stepInfo)->
-    if @ == 1
+    if @C == 1
       @PC = stepInfo.address;
+      addCycleOnBranch stepInfo;
+
+  ###
+    BEQ  Branch on Result Zero
+
+     branch on Z = 1                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BEQ oper      F0    2     2**
+  ###
+  BEQ : (stepInfo) ->
+    if @Z == 1
+      @PC = stepInfo.address;
+      addCycleOnBranch stepInfo;
+
+  ###
+    BIT  Test Bits in Memory with Accumulator
+
+     bits 7 and 6 of operand are transfered to bit 7 and 6 of SR (N,V);
+     the zeroflag is set to the result of operand AND accumulator.
+
+     A AND M, M7 -> N, M6 -> V        N Z C I D V
+                                     M7 + - - - M6
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     zeropage      BIT oper      24    2     3
+     absolute      BIT oper      2C    3     4
+
+  ###
+  BIT : (stepInfo) ->
+    if @Z == 1
+      @PC = stepInfo.address;
+      addCycleOnBranch stepInfo;
+
+  ###
+    BMI  Branch on Result Minus
+
+     branch on N = 1                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BMI oper      30    2     2**
+  ###
+  BMI : (stepInfo) ->
+  if @N == 1
+    @PC = stepInfo.address;
+    addCycleOnBranch stepInfo;
+
+  ###
+    BNE  Branch on Result not Zero
+
+     branch on Z = 0                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BNE oper      D0    2     2**
+  ###
+  BNE : (stepInfo) ->
+    if @Z == 0
+      @PC = stepInfo.address;
+      addCycleOnBranch stepInfo;
 
   exports.CPU = CPU

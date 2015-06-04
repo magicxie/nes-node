@@ -114,7 +114,7 @@ describe 'SBC', ->
   it '88 - 86  = 2', ->
     cpu.SEC()
     cpu.AC = 0x58
-    cpu.SBC {operand : 0x57, address:cpu.ADDRESSING_MODE.IMPLIED}
+    cpu.SBC {operand : 0x57, addressMode:cpu.implied(0x57)}
     cpu.AC.should.be.eql 2
 
 describe 'ASL', ->
@@ -123,7 +123,8 @@ describe 'ASL', ->
 
   it 'Accumulator 88 << 1 = 176', ->
     cpu.AC = 0x58
-    cpu.ASL cpu.accumulator()
+    addressMode = cpu.accumulator()
+    cpu.ASL {operand : addressMode.operand, addressMode:addressMode}
     cpu.AC.should.be.eql 0xB0
 
 describe 'OPC 69', ->

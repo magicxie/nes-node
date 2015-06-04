@@ -127,7 +127,7 @@
       cpu.AC = 0x58;
       cpu.SBC({
         operand: 0x57,
-        address: cpu.ADDRESSING_MODE.IMPLIED
+        addressMode: cpu.implied(0x57)
       });
       return cpu.AC.should.be.eql(2);
     });
@@ -137,8 +137,13 @@
     var cpu;
     cpu = new CPU;
     return it('Accumulator 88 << 1 = 176', function() {
+      var addressMode;
       cpu.AC = 0x58;
-      cpu.ASL(cpu.accumulator());
+      addressMode = cpu.accumulator();
+      cpu.ASL({
+        operand: addressMode.operand,
+        addressMode: addressMode
+      });
       return cpu.AC.should.be.eql(0xB0);
     });
   });

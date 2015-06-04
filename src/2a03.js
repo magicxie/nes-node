@@ -3,6 +3,8 @@
   var CPU;
 
   CPU = (function() {
+    var cycles;
+
     CPU.prototype.PC = 0;
 
     CPU.prototype.AC = 0;
@@ -35,6 +37,8 @@
 
     CPU.prototype.ramSize = 0xFFFF;
 
+    cycles = 0;
+
     function CPU() {
       var i, ref, x;
       for (x = i = 0, ref = this.ramSize; 0 <= ref ? i <= ref : i >= ref; x = 0 <= ref ? ++i : --i) {
@@ -43,7 +47,8 @@
     }
 
     CPU.prototype.reset = function() {
-      return this.PC = 0;
+      this.PC = 0;
+      return cycles = 0;
     };
 
     CPU.prototype.clear = function() {
@@ -166,13 +171,14 @@
 
     CPU.stepInfo = {
       operand: 0x00,
-      addressMode: CPU.immediate
+      addressMode: null
     };
 
     CPU.prototype.step = function() {
       var operand;
       operand = this.ram[this.PC];
-      return this.stepInfo.operand = operand;
+      this.stepInfo.operand = operand;
+      return this.stepInfo.addressMode = this.immediate(operand);
     };
 
     CPU.prototype.accumulate = function(src, dst, carry) {
@@ -190,6 +196,10 @@
     CPU.prototype.setZN = function(oper) {
       this.setZ(oper);
       return this.setN(oper);
+    };
+
+    CPU.prototype.addCycleOnBranch = function(stepInfo) {
+      return this.cycles += 1;
     };
 
     CPU.prototype.SED = function() {
@@ -309,27 +319,133 @@
     CPU.prototype.ASL = function(stepInfo) {
       var addressingMode, operand;
       operand = stepInfo.operand;
-      addressingMode = stepInfo.address;
+      addressingMode = stepInfo.addressMode;
       this.C = (operand >> 7) & 1;
       operand <<= 1;
-      console.log('1', addressingMode);
-      if (addressingMode === this.ADDRESSING_MODE.ACCUMULATOR) {
+      console.log(stepInfo, '1', addressingMode.address);
+      if (addressingMode.address === this.ADDRESSING_MODE.ACCUMULATOR) {
         this.AC = operand;
       } else {
-        this.ram[stepInfo.address];
+        this.ram[operand];
       }
       return this.setZN(operand);
     };
 
+
+    /*
+      BCC  Branch on Carry Clear
+    
+       branch on C = 0                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BCC oper      90    2     2**
+     */
+
     CPU.prototype.BCC = function(stepInfo) {
       if (this.C === 0) {
-        return this.PC = stepInfo.address;
+        this.PC = stepInfo.addressMode.address;
+        return addCycleOnBranch(stepInfo);
       }
     };
 
+
+    /*
+      BCS  Branch on Carry Set
+    
+       branch on C = 1                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BCS oper      B0    2     2**
+     */
+
     CPU.prototype.BCS = function(stepInfo) {
-      if (this === 1) {
-        return this.PC = stepInfo.address;
+      if (this.C === 1) {
+        this.PC = stepInfo.address;
+        return addCycleOnBranch(stepInfo);
+      }
+    };
+
+
+    /*
+      BEQ  Branch on Result Zero
+    
+       branch on Z = 1                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BEQ oper      F0    2     2**
+     */
+
+    CPU.prototype.BEQ = function(stepInfo) {
+      if (this.Z === 1) {
+        this.PC = stepInfo.address;
+        return addCycleOnBranch(stepInfo);
+      }
+    };
+
+
+    /*
+      BIT  Test Bits in Memory with Accumulator
+    
+       bits 7 and 6 of operand are transfered to bit 7 and 6 of SR (N,V);
+       the zeroflag is set to the result of operand AND accumulator.
+    
+       A AND M, M7 -> N, M6 -> V        N Z C I D V
+                                       M7 + - - - M6
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       zeropage      BIT oper      24    2     3
+       absolute      BIT oper      2C    3     4
+     */
+
+    CPU.prototype.BIT = function(stepInfo) {
+      if (this.Z === 1) {
+        this.PC = stepInfo.address;
+        return addCycleOnBranch(stepInfo);
+      }
+    };
+
+
+    /*
+      BMI  Branch on Result Minus
+    
+       branch on N = 1                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BMI oper      30    2     2**
+     */
+
+    CPU.prototype.BMI = function(stepInfo) {};
+
+    if (CPU.N === 1) {
+      CPU.PC = stepInfo.address;
+      addCycleOnBranch(stepInfo);
+    }
+
+
+    /*
+      BNE  Branch on Result not Zero
+    
+       branch on Z = 0                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BNE oper      D0    2     2**
+     */
+
+    CPU.prototype.BNE = function(stepInfo) {
+      if (this.Z === 0) {
+        this.PC = stepInfo.address;
+        return addCycleOnBranch(stepInfo);
       }
     };
 
