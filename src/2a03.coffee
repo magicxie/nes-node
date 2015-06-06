@@ -270,7 +270,7 @@ class CPU
 
     if @C == 0
       @PC = stepInfo.addressMode.address;
-      addCycleOnBranch stepInfo
+      this.addCycleOnBranch stepInfo
 
   ###
     BCS  Branch on Carry Set
@@ -284,8 +284,8 @@ class CPU
   ###
   BCS : (stepInfo)->
     if @C == 1
-      @PC = stepInfo.address;
-      addCycleOnBranch stepInfo;
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
 
   ###
     BEQ  Branch on Result Zero
@@ -299,8 +299,8 @@ class CPU
   ###
   BEQ : (stepInfo) ->
     if @Z == 1
-      @PC = stepInfo.address;
-      addCycleOnBranch stepInfo;
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
 
   ###
     BIT  Test Bits in Memory with Accumulator
@@ -319,8 +319,8 @@ class CPU
   ###
   BIT : (stepInfo) ->
     if @Z == 1
-      @PC = stepInfo.address;
-      addCycleOnBranch stepInfo;
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
 
   ###
     BMI  Branch on Result Minus
@@ -333,9 +333,9 @@ class CPU
      relative      BMI oper      30    2     2**
   ###
   BMI : (stepInfo) ->
-  if @N == 1
-    @PC = stepInfo.address;
-    addCycleOnBranch stepInfo;
+    if @N == 1
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
 
   ###
     BNE  Branch on Result not Zero
@@ -349,7 +349,7 @@ class CPU
   ###
   BNE : (stepInfo) ->
     if @Z == 0
-      @PC = stepInfo.address;
-      addCycleOnBranch stepInfo;
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
 
   exports.CPU = CPU

@@ -346,7 +346,7 @@
     CPU.prototype.BCC = function(stepInfo) {
       if (this.C === 0) {
         this.PC = stepInfo.addressMode.address;
-        return addCycleOnBranch(stepInfo);
+        return this.addCycleOnBranch(stepInfo);
       }
     };
 
@@ -364,8 +364,8 @@
 
     CPU.prototype.BCS = function(stepInfo) {
       if (this.C === 1) {
-        this.PC = stepInfo.address;
-        return addCycleOnBranch(stepInfo);
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
       }
     };
 
@@ -383,8 +383,8 @@
 
     CPU.prototype.BEQ = function(stepInfo) {
       if (this.Z === 1) {
-        this.PC = stepInfo.address;
-        return addCycleOnBranch(stepInfo);
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
       }
     };
 
@@ -406,8 +406,8 @@
 
     CPU.prototype.BIT = function(stepInfo) {
       if (this.Z === 1) {
-        this.PC = stepInfo.address;
-        return addCycleOnBranch(stepInfo);
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
       }
     };
 
@@ -423,12 +423,12 @@
        relative      BMI oper      30    2     2**
      */
 
-    CPU.prototype.BMI = function(stepInfo) {};
-
-    if (CPU.N === 1) {
-      CPU.PC = stepInfo.address;
-      addCycleOnBranch(stepInfo);
-    }
+    CPU.prototype.BMI = function(stepInfo) {
+      if (this.N === 1) {
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
+      }
+    };
 
 
     /*
@@ -444,8 +444,8 @@
 
     CPU.prototype.BNE = function(stepInfo) {
       if (this.Z === 0) {
-        this.PC = stepInfo.address;
-        return addCycleOnBranch(stepInfo);
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
       }
     };
 
@@ -456,3 +456,5 @@
   })();
 
 }).call(this);
+
+//# sourceMappingURL=2a03.js.map

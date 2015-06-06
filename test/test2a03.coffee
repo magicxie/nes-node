@@ -127,9 +127,85 @@ describe 'ASL', ->
     cpu.ASL {operand : addressMode.operand, addressMode:addressMode}
     cpu.AC.should.be.eql 0xB0
 
+describe 'Branch instruction test', ->
+
+  cpu = new CPU
+
+  oper = 0x10
+  addressMode = cpu.relative(oper)
+  stepInfo = {operand : addressMode.operand, addressMode:addressMode}
+
+  beforeEach ->
+    cpu.PC = 0x00
+
+  describe 'BCC', ->
+
+    it 'Branch on C = 0', ->
+
+      cpu.C = 0
+
+      cpu.BCC stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on C = 1', ->
+
+      cpu.C = 1
+
+      cpu.BCC stepInfo
+      cpu.PC.should.be.eql 0x00
+
+  describe 'BCS', ->
+
+    it 'Branch on C = 1', ->
+
+      cpu.C = 1
+
+      cpu.BCS stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on C = 0', ->
+
+      cpu.C = 0
+
+      cpu.BCS stepInfo
+      cpu.PC.should.be.eql 0x00
+
+  describe 'BEQ', ->
+
+    it 'Branch on Z = 1', ->
+
+      cpu.Z = 1
+
+      cpu.BEQ stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on Z = 0', ->
+
+      cpu.Z = 0
+
+      cpu.BEQ stepInfo
+      cpu.PC.should.be.eql 0x00
+
+  describe 'BMI', ->
+
+    it 'Branch on N = 1', ->
+
+      cpu.N = 1
+
+      cpu.BMI stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on N = 0', ->
+
+      cpu.N = 0
+
+      cpu.BMI stepInfo
+      cpu.PC.should.be.eql 0x00
+
+
 describe 'OPC 69', ->
   cpu = new CPU
   beforeEach ->
     cpu.clear()
-  it 'should be ADC immidiate', ->
+  it 'should be ADC immediate', ->
     cpu.ram.length.should.eql 0x10000

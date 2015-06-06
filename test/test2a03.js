@@ -148,15 +148,79 @@
     });
   });
 
+  describe('Branch instruction test', function() {
+    var addressMode, cpu, oper, stepInfo;
+    cpu = new CPU;
+    oper = 0x10;
+    addressMode = cpu.relative(oper);
+    stepInfo = {
+      operand: addressMode.operand,
+      addressMode: addressMode
+    };
+    beforeEach(function() {
+      return cpu.PC = 0x00;
+    });
+    describe('BCC', function() {
+      it('Branch on C = 0', function() {
+        cpu.C = 0;
+        cpu.BCC(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on C = 1', function() {
+        cpu.C = 1;
+        cpu.BCC(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+    describe('BCS', function() {
+      it('Branch on C = 1', function() {
+        cpu.C = 1;
+        cpu.BCS(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on C = 0', function() {
+        cpu.C = 0;
+        cpu.BCS(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+    describe('BEQ', function() {
+      it('Branch on Z = 1', function() {
+        cpu.Z = 1;
+        cpu.BEQ(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on Z = 0', function() {
+        cpu.Z = 0;
+        cpu.BEQ(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+    return describe('BMI', function() {
+      it('Branch on N = 1', function() {
+        cpu.N = 1;
+        cpu.BMI(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on N = 0', function() {
+        cpu.N = 0;
+        cpu.BMI(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+  });
+
   describe('OPC 69', function() {
     var cpu;
     cpu = new CPU;
     beforeEach(function() {
       return cpu.clear();
     });
-    return it('should be ADC immidiate', function() {
+    return it('should be ADC immediate', function() {
       return cpu.ram.length.should.eql(0x10000);
     });
   });
 
 }).call(this);
+
+//# sourceMappingURL=test2a03.js.map
