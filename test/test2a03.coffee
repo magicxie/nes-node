@@ -202,6 +202,102 @@ describe 'Branch instruction test', ->
       cpu.BMI stepInfo
       cpu.PC.should.be.eql 0x00
 
+  describe 'BNE', ->
+
+    it 'Branch on Z = 0', ->
+
+      cpu.Z = 0
+
+      cpu.BNE stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on Z = 1', ->
+
+      cpu.Z = 1
+
+      cpu.BNE stepInfo
+      cpu.PC.should.be.eql 0x00
+
+  describe 'BPL', ->
+
+    it 'Branch on N = 0', ->
+
+      cpu.N = 0
+
+      cpu.BPL stepInfo
+      cpu.PC.should.be.eql addressMode.address
+
+    it 'Do not branch on N = 1', ->
+
+      cpu.N = 1
+
+      cpu.BPL stepInfo
+      cpu.PC.should.be.eql 0x00
+
+
+describe 'BIT', ->
+
+  cpu = new CPU
+  cpu.ram[0x00] = 0x01
+
+  oper = 0x00
+  addressMode = cpu.absolute(oper)
+  stepInfo = {operand : addressMode.operand, addressMode:addressMode}
+
+  it 'Z should be 1', ->
+
+    cpu.AC = 0x01
+    cpu.BIT stepInfo
+    cpu.Z.should.be.eql 1
+    cpu.N.should.be.eql 0
+    cpu.V.should.be.eql 0
+
+  it 'Z should be 0', ->
+
+    cpu.AC = 0x00
+    cpu.BIT stepInfo
+    cpu.Z.should.be.eql 0
+    cpu.N.should.be.eql 0
+    cpu.V.should.be.eql 0
+
+  it 'N should be 1', ->
+
+    cpu.ram[0x00] = 0x80
+    oper = 0x00
+    addressMode = cpu.absolute(oper)
+    stepInfo = {operand : addressMode.operand, addressMode:addressMode}
+
+    cpu.AC = 0x00
+    cpu.BIT stepInfo
+    cpu.Z.should.be.eql 0
+    cpu.N.should.be.eql 1
+    cpu.V.should.be.eql 0
+
+  it 'Z should be 1', ->
+
+    cpu.ram[0x00] = 0x81
+    oper = 0x00
+    addressMode = cpu.absolute(oper)
+    stepInfo = {operand : addressMode.operand, addressMode:addressMode}
+
+    cpu.AC = 0x01
+    cpu.BIT stepInfo
+    cpu.Z.should.be.eql 1
+    cpu.N.should.be.eql 1
+    cpu.V.should.be.eql 0
+
+  it 'Z ,V and N should be 1', ->
+
+    cpu.ram[0x00] = 0xC1
+    oper = 0x00
+    addressMode = cpu.absolute(oper)
+    stepInfo = {operand : addressMode.operand, addressMode:addressMode}
+
+    cpu.AC = 0x01
+    cpu.BIT stepInfo
+    cpu.Z.should.be.eql 1
+    cpu.N.should.be.eql 1
+    cpu.V.should.be.eql 1
 
 describe 'OPC 69', ->
   cpu = new CPU

@@ -21,7 +21,22 @@ class CPU
   ram : []
   ramSize : 0xFFFF
 
-  cycles = 0;
+  #Constants for reset and init.
+  cycles : 0
+  initSP : 0xFD
+  initPC : 0xFFFC
+
+  #interrupt vector table
+  vectorTable : {
+    nmi: 0xFFFA,
+    reset: 0xFFFC,
+    irq: 0xFFFE
+  }
+
+  readingLength : {
+    L : 8,
+    HL : 16
+  }
 
   constructor : ->
     for x in [0..@ramSize]
@@ -29,13 +44,52 @@ class CPU
 
   #reset pc
   reset :() ->
-    @PC = 0;
-    cycles = 0;
+    @PC = @initPC
+    @SP = @initSP
+    @cycles = 0;
 
   #clear ram
   clear :() ->
     for x in [0..@ramSize]
       @ram[x] = 0;
+
+  #Little-end read
+  read : (address, readingLength) ->
+
+    if readingLength == @readingLength.HL
+      l = @ram[address];
+      h = @ram[address + 1];
+      h << 8 | l
+    else @ram[address];
+
+  ###
+    Stack operations
+  ###
+
+  #push stack
+  push :(value) ->
+
+    if value > 0xFF
+      push(value >> 8)#High 8
+      push(value & 0xFF)#Low 8
+    else
+      @ram[@SP] = value
+      @SP--
+
+  pull :() ->
+    @SP++
+    @ram[@SP]
+
+  ###
+   Interruption
+  ###
+
+  #NMI Non-Maskable Interrupt
+  nmi :() ->
+
+
+  #IRQ
+  irq :() ->
 
   printRegisters : ()->
     console.log 'AC=',@AC,'(= BDC',@AC.toString(16),') V=',@V,'C=',@C, 'N=',@N,'Z=',@Z
@@ -311,16 +365,18 @@ class CPU
      A AND M, M7 -> N, M6 -> V        N Z C I D V
                                      M7 + - - - M6
 
-     addressing    assembler    opc  bytes  cyles
+     addressing    assembler    opc  bytes  cycles
      --------------------------------------------
      zeropage      BIT oper      24    2     3
      absolute      BIT oper      2C    3     4
 
   ###
   BIT : (stepInfo) ->
-    if @Z == 1
-      @PC = stepInfo.addressMode.address;
-      this.addCycleOnBranch stepInfo;
+
+    console.log stepInfo
+    @N = stepInfo.operand >> 7 & 1
+    @V = stepInfo.operand >> 6 & 1
+    @Z = stepInfo.operand & @AC
 
   ###
     BMI  Branch on Result Minus
@@ -328,7 +384,7 @@ class CPU
      branch on N = 1                  N Z C I D V
                                       - - - - - -
 
-     addressing    assembler    opc  bytes  cyles
+     addressing    assembler    opc  bytes  cycles
      --------------------------------------------
      relative      BMI oper      30    2     2**
   ###
@@ -352,4 +408,69 @@ class CPU
       @PC = stepInfo.addressMode.address;
       this.addCycleOnBranch stepInfo;
 
+  ###
+    BPL  Branch on Result Plus
+
+     branch on N = 0                  N Z C I D V
+                                      - - - - - -
+
+     addressing    assembler    opc  bytes  cyles
+     --------------------------------------------
+     relative      BPL oper      10    2     2**
+
+  ###
+  BPL : (stepInfo) ->
+    if @N == 0
+      @PC = stepInfo.addressMode.address;
+      this.addCycleOnBranch stepInfo;
+
+  ###
+    BRK  Force Break
+
+      interrupt,                       N Z C I D V
+      push PC+2, push SR               - - - 1 - -
+
+        addressing    assembler    opc  bytes  cyles
+      --------------------------------------------
+      implied       BRK           00    1     7
+  ###
+  BRK : (stepInfo) ->
+    @I = 1
+    @PC += 2
+
+
+
+  ###
+    BVC  Branch on Overflow Clear
+
+      branch on V = 0                  N Z C I D V
+    - - - - - -
+
+    addressing    assembler    opc  bytes  cyles
+    --------------------------------------------
+    relative      BVC oper      50    2     2**
+
+  ###
+
+  ###
+    BVS  Branch on Overflow Set
+
+    branch on V = 1                  N Z C I D V
+  - - - - - -
+
+  addressing    assembler    opc  bytes  cyles
+  --------------------------------------------
+  relative      BVC oper      70    2     2**
+  ###
+
+  ###
+      CLC  Clear Carry Flag
+
+        0 -> C                           N Z C I D V
+    - - 0 - - -
+
+    addressing    assembler    opc  bytes  cyles
+    --------------------------------------------
+    implied       CLC           18    1     2
+  ###
   exports.CPU = CPU

@@ -3,8 +3,6 @@
   var CPU;
 
   CPU = (function() {
-    var cycles;
-
     CPU.prototype.PC = 0;
 
     CPU.prototype.AC = 0;
@@ -37,7 +35,22 @@
 
     CPU.prototype.ramSize = 0xFFFF;
 
-    cycles = 0;
+    CPU.prototype.cycles = 0;
+
+    CPU.prototype.initSP = 0xFD;
+
+    CPU.prototype.initPC = 0xFFFC;
+
+    CPU.prototype.vectorTable = {
+      nmi: 0xFFFA,
+      reset: 0xFFFC,
+      irq: 0xFFFE
+    };
+
+    CPU.prototype.readingLength = {
+      L: 8,
+      HL: 16
+    };
 
     function CPU() {
       var i, ref, x;
@@ -47,8 +60,9 @@
     }
 
     CPU.prototype.reset = function() {
-      this.PC = 0;
-      return cycles = 0;
+      this.PC = this.initPC;
+      this.SP = this.initSP;
+      return this.cycles = 0;
     };
 
     CPU.prototype.clear = function() {
@@ -59,6 +73,46 @@
       }
       return results;
     };
+
+    CPU.prototype.read = function(address, readingLength) {
+      var h, l;
+      if (readingLength === this.readingLength.HL) {
+        l = this.ram[address];
+        h = this.ram[address + 1];
+        return h << 8 | l;
+      } else {
+        return this.ram[address];
+      }
+    };
+
+
+    /*
+      Stack operations
+     */
+
+    CPU.prototype.push = function(value) {
+      if (value > 0xFF) {
+        push(value >> 8);
+        return push(value & 0xFF);
+      } else {
+        this.ram[this.SP] = value;
+        return this.SP--;
+      }
+    };
+
+    CPU.prototype.pull = function() {
+      this.SP++;
+      return this.ram[this.SP];
+    };
+
+
+    /*
+     Interruption
+     */
+
+    CPU.prototype.nmi = function() {};
+
+    CPU.prototype.irq = function() {};
 
     CPU.prototype.printRegisters = function() {
       return console.log('AC=', this.AC, '(= BDC', this.AC.toString(16), ') V=', this.V, 'C=', this.C, 'N=', this.N, 'Z=', this.Z);
@@ -398,17 +452,17 @@
        A AND M, M7 -> N, M6 -> V        N Z C I D V
                                        M7 + - - - M6
     
-       addressing    assembler    opc  bytes  cyles
+       addressing    assembler    opc  bytes  cycles
        --------------------------------------------
        zeropage      BIT oper      24    2     3
        absolute      BIT oper      2C    3     4
      */
 
     CPU.prototype.BIT = function(stepInfo) {
-      if (this.Z === 1) {
-        this.PC = stepInfo.addressMode.address;
-        return this.addCycleOnBranch(stepInfo);
-      }
+      console.log(stepInfo);
+      this.N = stepInfo.operand >> 7 & 1;
+      this.V = stepInfo.operand >> 6 & 1;
+      return this.Z = stepInfo.operand & this.AC;
     };
 
 
@@ -418,7 +472,7 @@
        branch on N = 1                  N Z C I D V
                                         - - - - - -
     
-       addressing    assembler    opc  bytes  cyles
+       addressing    assembler    opc  bytes  cycles
        --------------------------------------------
        relative      BMI oper      30    2     2**
      */
@@ -448,6 +502,78 @@
         return this.addCycleOnBranch(stepInfo);
       }
     };
+
+
+    /*
+      BPL  Branch on Result Plus
+    
+       branch on N = 0                  N Z C I D V
+                                        - - - - - -
+    
+       addressing    assembler    opc  bytes  cyles
+       --------------------------------------------
+       relative      BPL oper      10    2     2**
+     */
+
+    CPU.prototype.BPL = function(stepInfo) {
+      if (this.N === 0) {
+        this.PC = stepInfo.addressMode.address;
+        return this.addCycleOnBranch(stepInfo);
+      }
+    };
+
+
+    /*
+      BRK  Force Break
+    
+        interrupt,                       N Z C I D V
+        push PC+2, push SR               - - - 1 - -
+    
+          addressing    assembler    opc  bytes  cyles
+        --------------------------------------------
+        implied       BRK           00    1     7
+     */
+
+    CPU.prototype.BRK = function(stepInfo) {
+      this.I = 1;
+      return this.PC += 2;
+    };
+
+
+    /*
+      BVC  Branch on Overflow Clear
+    
+        branch on V = 0                  N Z C I D V
+      - - - - - -
+    
+      addressing    assembler    opc  bytes  cyles
+      --------------------------------------------
+      relative      BVC oper      50    2     2**
+     */
+
+
+    /*
+      BVS  Branch on Overflow Set
+    
+      branch on V = 1                  N Z C I D V
+    - - - - - -
+    
+    addressing    assembler    opc  bytes  cyles
+    --------------------------------------------
+    relative      BVC oper      70    2     2**
+     */
+
+
+    /*
+        CLC  Clear Carry Flag
+    
+          0 -> C                           N Z C I D V
+      - - 0 - - -
+    
+      addressing    assembler    opc  bytes  cyles
+      --------------------------------------------
+      implied       CLC           18    1     2
+     */
 
     exports.CPU = CPU;
 

@@ -196,7 +196,7 @@
         return cpu.PC.should.be.eql(0x00);
       });
     });
-    return describe('BMI', function() {
+    describe('BMI', function() {
       it('Branch on N = 1', function() {
         cpu.N = 1;
         cpu.BMI(stepInfo);
@@ -207,6 +207,98 @@
         cpu.BMI(stepInfo);
         return cpu.PC.should.be.eql(0x00);
       });
+    });
+    describe('BNE', function() {
+      it('Branch on Z = 0', function() {
+        cpu.Z = 0;
+        cpu.BNE(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on Z = 1', function() {
+        cpu.Z = 1;
+        cpu.BNE(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+    return describe('BPL', function() {
+      it('Branch on N = 0', function() {
+        cpu.N = 0;
+        cpu.BPL(stepInfo);
+        return cpu.PC.should.be.eql(addressMode.address);
+      });
+      return it('Do not branch on N = 1', function() {
+        cpu.N = 1;
+        cpu.BPL(stepInfo);
+        return cpu.PC.should.be.eql(0x00);
+      });
+    });
+  });
+
+  describe('BIT', function() {
+    var addressMode, cpu, oper, stepInfo;
+    cpu = new CPU;
+    cpu.ram[0x00] = 0x01;
+    oper = 0x00;
+    addressMode = cpu.absolute(oper);
+    stepInfo = {
+      operand: addressMode.operand,
+      addressMode: addressMode
+    };
+    it('Z should be 1', function() {
+      cpu.AC = 0x01;
+      cpu.BIT(stepInfo);
+      cpu.Z.should.be.eql(1);
+      cpu.N.should.be.eql(0);
+      return cpu.V.should.be.eql(0);
+    });
+    it('Z should be 0', function() {
+      cpu.AC = 0x00;
+      cpu.BIT(stepInfo);
+      cpu.Z.should.be.eql(0);
+      cpu.N.should.be.eql(0);
+      return cpu.V.should.be.eql(0);
+    });
+    it('N should be 1', function() {
+      cpu.ram[0x00] = 0x80;
+      oper = 0x00;
+      addressMode = cpu.absolute(oper);
+      stepInfo = {
+        operand: addressMode.operand,
+        addressMode: addressMode
+      };
+      cpu.AC = 0x00;
+      cpu.BIT(stepInfo);
+      cpu.Z.should.be.eql(0);
+      cpu.N.should.be.eql(1);
+      return cpu.V.should.be.eql(0);
+    });
+    it('Z should be 1', function() {
+      cpu.ram[0x00] = 0x81;
+      oper = 0x00;
+      addressMode = cpu.absolute(oper);
+      stepInfo = {
+        operand: addressMode.operand,
+        addressMode: addressMode
+      };
+      cpu.AC = 0x01;
+      cpu.BIT(stepInfo);
+      cpu.Z.should.be.eql(1);
+      cpu.N.should.be.eql(1);
+      return cpu.V.should.be.eql(0);
+    });
+    return it('Z ,V and N should be 1', function() {
+      cpu.ram[0x00] = 0xC1;
+      oper = 0x00;
+      addressMode = cpu.absolute(oper);
+      stepInfo = {
+        operand: addressMode.operand,
+        addressMode: addressMode
+      };
+      cpu.AC = 0x01;
+      cpu.BIT(stepInfo);
+      cpu.Z.should.be.eql(1);
+      cpu.N.should.be.eql(1);
+      return cpu.V.should.be.eql(1);
     });
   });
 
