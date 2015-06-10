@@ -51,7 +51,7 @@
       this.cycles = 0;
     }
 
-    CPU.prototype.RST = function() {
+    CPU.prototype.init = function() {
       this.PC = this.PC_INIT_VAL;
       this.SP = this.SP_INIT_VAL;
       return this.cycles = 0;
@@ -119,16 +119,34 @@
      Interruption
      */
 
-    CPU.prototype.NMI = function() {
+    CPU.prototype.interrupt = function(interruptType) {
       this.push(this.PC);
-      return this.PC = pop();
+      this.push(this.getP());
+      this.PC = this.read(interruptType, CPU.prototype.READ_LENGTH.HL);
+      this.I = 1;
+      return this.cycles += 7;
     };
 
-    CPU.prototype.IRQ = function() {};
+    CPU.prototype.NMI = function() {
+      return this.interrupt(CPU.prototype.VECTOR_TABLE.NMI);
+    };
+
+    CPU.prototype.IRQ = function() {
+      return this.interrupt(CPU.prototype.VECTOR_TABLE.IRQ);
+    };
+
+    CPU.prototype.RST = function() {
+      return this.interrupt(CPU.prototype.VECTOR_TABLE.RST);
+    };
 
     CPU.prototype.printRegisters = function() {
       return console.log('AC=', this.AC, '(= BDC', this.AC.toString(16), ') V=', this.V, 'C=', this.C, 'N=', this.N, 'Z=', this.Z);
     };
+
+
+    /*
+      Addressing modes
+     */
 
     CPU.prototype.accumulator = function() {
       return {
@@ -261,6 +279,11 @@
     CPU.prototype.addCycleOnBranch = function(stepInfo) {
       return this.cycles += 1;
     };
+
+
+    /*
+      Instructions
+     */
 
     CPU.prototype.SED = function() {
       return this.D = 1;

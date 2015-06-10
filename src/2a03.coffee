@@ -50,7 +50,7 @@ class CPU
     @cycles = 0
 
   #reset pc
-  RST :() ->
+  init :() ->
     @PC = @PC_INIT_VAL
     @SP = @SP_INIT_VAL
     @cycles = 0
@@ -106,20 +106,32 @@ class CPU
   ###
    Interruption
   ###
+  interrupt : (interruptType) ->
+
+    @push(@PC)
+    @push(@getP())
+    @PC = @read(interruptType, CPU::READ_LENGTH.HL)
+    @I = 1
+    @cycles += 7
 
   #NMI Non-Maskable Interrupt
   NMI :() ->
-    @push(@PC)
-
-    @PC = pop()
+    @interrupt(CPU::VECTOR_TABLE.NMI)
 
   #IRQ
   IRQ :() ->
+    @interrupt(CPU::VECTOR_TABLE.IRQ)
+
+  #reset
+  RST :() ->
+    @interrupt(CPU::VECTOR_TABLE.RST)
 
   printRegisters : ()->
     console.log 'AC=',@AC,'(= BDC',@AC.toString(16),') V=',@V,'C=',@C, 'N=',@N,'Z=',@Z
 
-  #addressing mode:
+  ###
+    Addressing modes
+  ###
   #A		....	Accumulator	 	OPC A	 	operand is AC
   accumulator :() -> {operand : @AC, address : CPU::ADDRESSING_MODE.ACCUMULATOR}
 
@@ -197,6 +209,9 @@ class CPU
   addCycleOnBranch : (stepInfo) ->
     @cycles += 1;
 
+  ###
+    Instructions
+  ###
 
   SED : () ->
     @D = 1

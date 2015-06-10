@@ -96,6 +96,29 @@
     });
   });
 
+  describe('Interruption', function() {
+    var cpu;
+    cpu = new CPU;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.NMI] = 0xAA;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.NMI + 1] = 0xAB;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.IRQ] = 0xBA;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.IRQ + 1] = 0xBB;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.RST] = 0xCA;
+    cpu.ram[CPU.prototype.VECTOR_TABLE.RST + 1] = 0xCB;
+    it('should find NMI handler', function() {
+      cpu.NMI();
+      return cpu.PC.should.be.eql(0xABAA);
+    });
+    it('should find IRQ handler', function() {
+      cpu.IRQ();
+      return cpu.PC.should.be.eql(0xBBBA);
+    });
+    return it('should find RST handler', function() {
+      cpu.RST();
+      return cpu.PC.should.be.eql(0xCBCA);
+    });
+  });
+
   describe('Addressing mode', function() {
     var cpu;
     cpu = new CPU;

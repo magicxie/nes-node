@@ -86,6 +86,29 @@ describe 'Stack', ->
     cpu.pop().should.be.eql 0xCD
     (prevSP - cpu.SP).should.be.eql 1
 
+describe 'Interruption', ->
+
+  cpu = new CPU
+
+  cpu.ram[CPU::VECTOR_TABLE.NMI] = 0xAA
+  cpu.ram[CPU::VECTOR_TABLE.NMI + 1] = 0xAB
+  cpu.ram[CPU::VECTOR_TABLE.IRQ] = 0xBA
+  cpu.ram[CPU::VECTOR_TABLE.IRQ + 1] = 0xBB
+  cpu.ram[CPU::VECTOR_TABLE.RST] = 0xCA
+  cpu.ram[CPU::VECTOR_TABLE.RST + 1] = 0xCB
+
+  it 'should find NMI handler', ->
+    cpu.NMI()
+    cpu.PC.should.be.eql 0xABAA
+
+  it 'should find IRQ handler', ->
+    cpu.IRQ()
+    cpu.PC.should.be.eql 0xBBBA
+
+  it 'should find RST handler', ->
+    cpu.RST()
+    cpu.PC.should.be.eql 0xCBCA
+
 describe 'Addressing mode', ->
   cpu = new CPU
   it 'should find oper immediately', ->
