@@ -3,72 +3,64 @@
   var CPU;
 
   CPU = (function() {
-    CPU.prototype.PC = 0;
+    CPU.prototype.RAM_SIZE = 0xFFFF;
 
-    CPU.prototype.AC = 0;
+    CPU.prototype.SP_INIT_VAL = 0xFD;
 
-    CPU.prototype.XR = 0;
+    CPU.prototype.PC_INIT_VAL = 0xFFFC;
 
-    CPU.prototype.YR = 0;
+    CPU.prototype.BASE_STACK_ADDR = 0x100;
 
-    CPU.prototype.SR = 0;
-
-    CPU.prototype.SP = 0;
-
-    CPU.prototype.N = 0;
-
-    CPU.prototype.V = 0;
-
-    CPU.prototype.U = 1;
-
-    CPU.prototype.B = 0;
-
-    CPU.prototype.D = 0;
-
-    CPU.prototype.I = 0;
-
-    CPU.prototype.Z = 0;
-
-    CPU.prototype.C = 0;
-
-    CPU.prototype.ram = [];
-
-    CPU.prototype.ramSize = 0xFFFF;
-
-    CPU.prototype.cycles = 0;
-
-    CPU.prototype.initSP = 0xFD;
-
-    CPU.prototype.initPC = 0xFFFC;
-
-    CPU.prototype.vectorTable = {
-      nmi: 0xFFFA,
-      reset: 0xFFFC,
-      irq: 0xFFFE
+    CPU.prototype.VECTOR_TABLE = {
+      NMI: 0xFFFA,
+      RST: 0xFFFC,
+      IRQ: 0xFFFE
     };
 
-    CPU.prototype.readingLength = {
+    CPU.prototype.READ_LENGTH = {
       L: 8,
       HL: 16
     };
 
-    function CPU() {
+    CPU.prototype.ADDRESSING_MODE = {
+      ACCUMULATOR: 'ACC',
+      IMMEDIATE: 'IMM',
+      IMPLIED: 'IMP'
+    };
+
+    function CPU(ram) {
       var i, ref, x;
-      for (x = i = 0, ref = this.ramSize; 0 <= ref ? i <= ref : i >= ref; x = 0 <= ref ? ++i : --i) {
+      this.ram = ram != null ? ram : [];
+      for (x = i = 0, ref = CPU.prototype.RAM_SIZE; 0 <= ref ? i <= ref : i >= ref; x = 0 <= ref ? ++i : --i) {
         this.ram[x] = 0;
       }
+      this.PC = CPU.prototype.PC_INIT_VAL;
+      this.AC = 0;
+      this.XR = 0;
+      this.YR = 0;
+      this.SR = 0;
+      this.SP = CPU.prototype.SP_INIT_VAL;
+      this.N = 0;
+      this.V = 0;
+      this.U = 1;
+      this.B = 0;
+      this.D = 0;
+      this.I = 0;
+      this.Z = 0;
+      this.C = 0;
+      this.cycles = 0;
     }
 
-    CPU.prototype.reset = function() {
-      this.PC = this.initPC;
-      this.SP = this.initSP;
+    CPU.prototype.RST = function() {
+      this.PC = this.PC_INIT_VAL;
+      this.SP = this.SP_INIT_VAL;
       return this.cycles = 0;
     };
 
     CPU.prototype.clear = function() {
       var i, ref, results, x;
       results = [];
-      for (x = i = 0, ref = this.ramSize; 0 <= ref ? i <= ref : i >= ref; x = 0 <= ref ? ++i : --i) {
+      for (x = i = 0, ref = CPU.prototype.RAM_SIZE; 0 <= ref ? i <= ref : i >= ref; x = 0 <= ref ? ++i : --i) {
         results.push(this.ram[x] = 0);
       }
       return results;
@@ -76,7 +68,7 @@
 
     CPU.prototype.read = function(address, readingLength) {
       var h, l;
-      if (readingLength === this.readingLength.HL) {
+      if (readingLength === CPU.prototype.READ_LENGTH.HL) {
         l = this.ram[address];
         h = this.ram[address + 1];
         return h << 8 | l;
@@ -92,17 +84,34 @@
 
     CPU.prototype.push = function(value) {
       if (value > 0xFF) {
-        push(value >> 8);
-        return push(value & 0xFF);
+        this.push(value >> 8);
+        return this.push(value & 0xFF);
       } else {
-        this.ram[this.SP] = value;
-        return this.SP--;
+        this.ram[CPU.prototype.BASE_STACK_ADDR + this.SP] = value;
+        this.SP--;
+        return this.SP &= 0xFF;
       }
     };
 
-    CPU.prototype.pull = function() {
+    CPU.prototype.pop = function() {
       this.SP++;
-      return this.ram[this.SP];
+      this.SP &= 0xFF;
+      return this.ram[CPU.prototype.BASE_STACK_ADDR + this.SP];
+    };
+
+    CPU.prototype.getP = function() {
+      return this.N << 7 | this.V << 6 | this.U << 5 | this.B << 4 | this.D << 3 | this.I << 2 | this.Z << 1 | this.C;
+    };
+
+    CPU.prototype.setP = function(P) {
+      this.N = P >> 7 & 0x1;
+      this.V = P >> 6 & 0x1;
+      this.U = P >> 5 & 0x1;
+      this.B = P >> 4 & 0x1;
+      this.D = P >> 3 & 0x1;
+      this.I = P >> 2 & 0x1;
+      this.Z = P >> 1 & 0x1;
+      return this.C = P & 0x1;
     };
 
 
@@ -110,24 +119,21 @@
      Interruption
      */
 
-    CPU.prototype.nmi = function() {};
+    CPU.prototype.NMI = function() {
+      this.push(this.PC);
+      return this.PC = pop();
+    };
 
-    CPU.prototype.irq = function() {};
+    CPU.prototype.IRQ = function() {};
 
     CPU.prototype.printRegisters = function() {
       return console.log('AC=', this.AC, '(= BDC', this.AC.toString(16), ') V=', this.V, 'C=', this.C, 'N=', this.N, 'Z=', this.Z);
     };
 
-    CPU.prototype.ADDRESSING_MODE = {
-      ACCUMULATOR: 'ACC',
-      IMMEDIATE: 'IMM',
-      IMPLIED: 'IMP'
-    };
-
     CPU.prototype.accumulator = function() {
       return {
         operand: this.AC,
-        address: this.ADDRESSING_MODE.ACCUMULATOR
+        address: CPU.prototype.ADDRESSING_MODE.ACCUMULATOR
       };
     };
 
@@ -155,14 +161,14 @@
     CPU.prototype.immediate = function(oper) {
       return {
         operand: oper,
-        address: this.ADDRESSING_MODE.IMMEDIATE
+        address: CPU.prototype.ADDRESSING_MODE.IMMEDIATE
       };
     };
 
     CPU.prototype.implied = function(oper) {
       return {
         operand: this.AC,
-        address: this.ADDRESSING_MODE.IMPLIED
+        address: CPU.prototype.ADDRESSING_MODE.IMPLIED
       };
     };
 
@@ -377,7 +383,7 @@
       this.C = (operand >> 7) & 1;
       operand <<= 1;
       console.log(stepInfo, '1', addressingMode.address);
-      if (addressingMode.address === this.ADDRESSING_MODE.ACCUMULATOR) {
+      if (addressingMode.address === CPU.prototype.ADDRESSING_MODE.ACCUMULATOR) {
         this.AC = operand;
       } else {
         this.ram[operand];

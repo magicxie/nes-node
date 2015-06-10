@@ -1,62 +1,69 @@
 class CPU
 
-  ##registers
-
-  PC : 0 ##Program Counter
-  AC : 0 ##Accumulator
-  XR : 0 ##X Register
-  YR : 0 ##Y Register
-  SR : 0 ##Status Register
-  SP : 0 ##Stack Pointer
-  N : 0 ##Negative
-  V : 0 ##Overflow
-  U : 1 ##ignored
-  B : 0 ##Break
-  D : 0 ##Decimal
-  I : 0 ##Interrupt (IRQ disable)
-  Z : 0 ##Zero
-  C : 0 ##Carry
-
   #16k ram
-  ram : []
-  ramSize : 0xFFFF
+  RAM_SIZE : 0xFFFF
 
   #Constants for reset and init.
-  cycles : 0
-  initSP : 0xFD
-  initPC : 0xFFFC
+  SP_INIT_VAL : 0xFD
+  PC_INIT_VAL : 0xFFFC
+
+  BASE_STACK_ADDR : 0x100
 
   #interrupt vector table
-  vectorTable : {
-    nmi: 0xFFFA,
-    reset: 0xFFFC,
-    irq: 0xFFFE
+  VECTOR_TABLE : {
+    NMI: 0xFFFA,
+    RST: 0xFFFC,
+    IRQ: 0xFFFE
   }
 
-  readingLength : {
+  READ_LENGTH : {
     L : 8,
     HL : 16
   }
 
-  constructor : ->
-    for x in [0..@ramSize]
+  ADDRESSING_MODE : {
+    ACCUMULATOR : 'ACC',
+    IMMEDIATE : 'IMM',
+    IMPLIED : 'IMP'
+  }
+
+  constructor : (@ram = [])  ->
+    for x in [0..CPU::RAM_SIZE]
       @ram[x] = 0;
 
+    ##registers
+    @PC =  CPU::PC_INIT_VAL ##Program Counter
+    @AC =  0 ##Accumulator
+    @XR =  0 ##X Register
+    @YR =  0 ##Y Register
+    @SR =  0 ##Status Register
+    @SP =  CPU::SP_INIT_VAL ##Stack Pointer
+    @N  =  0 ##Negative
+    @V  =  0 ##Overflow
+    @U  =  1 ##ignored
+    @B  =  0 ##Break
+    @D  =  0 ##Decimal
+    @I  =  0 ##Interrupt (IRQ disable)
+    @Z  =  0 ##Zero
+    @C  =  0 ##Carry
+
+    @cycles = 0
+
   #reset pc
-  reset :() ->
-    @PC = @initPC
-    @SP = @initSP
-    @cycles = 0;
+  RST :() ->
+    @PC = @PC_INIT_VAL
+    @SP = @SP_INIT_VAL
+    @cycles = 0
 
   #clear ram
   clear :() ->
-    for x in [0..@ramSize]
+    for x in [0..CPU::RAM_SIZE]
       @ram[x] = 0;
 
   #Little-end read
   read : (address, readingLength) ->
 
-    if readingLength == @readingLength.HL
+    if readingLength == CPU::READ_LENGTH.HL
       l = @ram[address];
       h = @ram[address + 1];
       h << 8 | l
@@ -70,39 +77,51 @@ class CPU
   push :(value) ->
 
     if value > 0xFF
-      push(value >> 8)#High 8
-      push(value & 0xFF)#Low 8
+      @push(value >> 8)#High 8
+      @push(value & 0xFF)#Low 8
     else
-      @ram[@SP] = value
+      @ram[CPU::BASE_STACK_ADDR + @SP] = value
       @SP--
+      @SP &= 0xFF #overflow
 
-  pull :() ->
+  pop :() ->
     @SP++
-    @ram[@SP]
+    @SP &= 0xFF #overflow
+    @ram[CPU::BASE_STACK_ADDR + @SP]
+
+  #p register
+  getP : () ->
+    @N<<7 | @V<<6 | @U<<5 | @B<<4 | @D<<3 | @I<<2 | @Z<<1 | @C
+
+  setP : (P) ->
+    @N = P>>7 & 0x1
+    @V = P>>6 & 0x1
+    @U = P>>5 & 0x1
+    @B = P>>4 & 0x1
+    @D = P>>3 & 0x1
+    @I = P>>2 & 0x1
+    @Z = P>>1 & 0x1
+    @C = P & 0x1
 
   ###
    Interruption
   ###
 
   #NMI Non-Maskable Interrupt
-  nmi :() ->
+  NMI :() ->
+    @push(@PC)
 
+    @PC = pop()
 
   #IRQ
-  irq :() ->
+  IRQ :() ->
 
   printRegisters : ()->
     console.log 'AC=',@AC,'(= BDC',@AC.toString(16),') V=',@V,'C=',@C, 'N=',@N,'Z=',@Z
 
-  ADDRESSING_MODE : {
-    ACCUMULATOR : 'ACC',
-    IMMEDIATE : 'IMM',
-    IMPLIED : 'IMP'
-  }
-
   #addressing mode:
   #A		....	Accumulator	 	OPC A	 	operand is AC
-  accumulator :() -> {operand : @AC, address : @ADDRESSING_MODE.ACCUMULATOR}
+  accumulator :() -> {operand : @AC, address : CPU::ADDRESSING_MODE.ACCUMULATOR}
 
 #abs		....	absolute	 	OPC $HHLL	 	operand is address $HHLL
   absolute    :(oper) -> {operand : @ram[oper], address : oper}
@@ -114,10 +133,10 @@ class CPU
   absoluteY   :(oper) -> {operand : @ram[oper + @YR], address : oper + @YR}
 
 # #		....	immediate	 	OPC #$BB	 	operand is byte (BB)
-  immediate :(oper) -> {operand : oper, address : @ADDRESSING_MODE.IMMEDIATE}
+  immediate :(oper) -> {operand : oper, address : CPU::ADDRESSING_MODE.IMMEDIATE}
 
 #impl		....	implied	 	OPC	 	operand implied
-  implied : (oper) -> {operand : @AC, address : @ADDRESSING_MODE.IMPLIED}
+  implied : (oper) -> {operand : @AC, address : CPU::ADDRESSING_MODE.IMPLIED}
 
 #ind		....	indirect	 	OPC ($HHLL)	 	operand is effective address; effective address is value of address
   indirect :(oper) -> {operand : @ram[@ram[oper]], address : @ram[oper]}
@@ -302,7 +321,7 @@ class CPU
 
     console.log(stepInfo,'1',addressingMode.address)
 
-    if addressingMode.address == @ADDRESSING_MODE.ACCUMULATOR
+    if addressingMode.address == CPU::ADDRESSING_MODE.ACCUMULATOR
       @AC = operand
     else
       @ram[operand]

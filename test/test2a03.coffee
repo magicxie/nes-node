@@ -5,54 +5,132 @@ CPU = cpu2a03.CPU
 
 describe 'CPU init', ->
   it 'should has a 16k ram', ->
+    cpu = new CPU
+    cpu.ram.length.should.eql 0x10000
+
+describe 'Memory read', ->
+
   cpu = new CPU
-  cpu.ram.length.should.eql 0x10000
+  address = 0xAA
+  beforeEach ->
+    cpu.ram[address] = 0x11
+    cpu.ram[address+1] = 0x2A
+
+  it 'should read 1 byte', ->
+    cpu.read(address).should.be.eql 0x11
+
+  it 'should read L byte', ->
+    cpu.read(address, cpu.READ_LENGTH.L).should.be.eql 0x11
+
+  it 'should read 2 bytes', ->
+    cpu.read(address, cpu.READ_LENGTH.HL).should.be.eql 0x2A11
+
+describe 'P register', ->
+
+  cpu = new CPU
+  it 'Should set P sequentially', ->
+    cpu.setP(0xDC) #1101 1100
+    cpu.N.should.be.eql 1
+    cpu.V.should.be.eql 1
+    cpu.U.should.be.eql 0
+    cpu.B.should.be.eql 1
+    cpu.D.should.be.eql 1
+    cpu.I.should.be.eql 1
+    cpu.Z.should.be.eql 0
+    cpu.C.should.be.eql 0
+
+  it 'Should get P sequentially', ->
+    cpu.N = 1
+    cpu.V = 1
+    cpu.U = 0
+    cpu.B = 1
+    cpu.D = 1
+    cpu.I = 1
+    cpu.Z = 0
+    cpu.C = 0
+    cpu.getP().should.be.eql(0xDC) #1101 1100
+
+describe 'Stack', ->
+
+  cpu = new CPU
+
+  it 'Push 1 byte should increase sp once', ->
+
+    prevSP = cpu.SP
+    cpu.push(0xAA)
+    cpu.ram[CPU::BASE_STACK_ADDR + prevSP].should.be.eql 0xAA
+    (prevSP - cpu.SP).should.be.eql 1
+
+
+  it 'Push 2 bytes should increase sp twice', ->
+
+    prevSP = cpu.SP
+    cpu.push(0xAABB)
+
+    cpu.ram[CPU::BASE_STACK_ADDR + prevSP - 1].should.be.eql 0xBB #low address stores low byte
+    cpu.ram[CPU::BASE_STACK_ADDR + prevSP].should.be.eql 0xAA #high
+
+    (prevSP - cpu.SP).should.be.eql 2
+
+  it 'Pop 1 byte, sp should remain the same', ->
+
+    prevSP = cpu.SP
+    cpu.push(0xBA)
+    cpu.pop().should.be.eql 0xBA
+    cpu.SP.should.be.eql prevSP
+
+  it 'Push 2 bytes, should pop low byte', ->
+
+    prevSP = cpu.SP
+    cpu.push(0xBACD)
+    cpu.pop().should.be.eql 0xCD
+    (prevSP - cpu.SP).should.be.eql 1
 
 describe 'Addressing mode', ->
   cpu = new CPU
-  it 'should find oper immidiate', ->
+  it 'should find oper immediately', ->
     cpu.immediate(0xAD).operand.should.eql 0xAD
 
-  it 'should find oper absolute', ->
+  it 'should find oper absolutely', ->
     cpu.ram[0xAD] = 0xD
     cpu.absolute(0xAD).operand.should.eql 0xD
 
-  it 'should find oper absoluteX', ->
+  it 'should find oper absolutelyX', ->
     cpu.XR = 0x0C
     cpu.ram[0xB9] = 0xDA
     cpu.absoluteX(0xAD).operand.should.eql 0xDA
 
-  it 'should find oper absoluteY', ->
+  it 'should find oper absolutelyY', ->
     cpu.YR = 0x0D
     cpu.ram[0xBA] = 0xDB
     cpu.absoluteY(0xAD).operand.should.eql 0xDB
 
-  it 'should find oper immediate', ->
+  it 'should find oper immediately', ->
     cpu.immediate(0xBB).operand.should.eql 0xBB
 
   it 'should find oper implied', ->
     cpu.AC = 0xDD
     cpu.implied(0xAD).operand.should.eql 0xDD
 
-  it 'should find oper indirect', ->
+  it 'should find oper indirectly', ->
     cpu.ram[0x0A] = 0xBA
     cpu.ram[0xBA] = 0xDB
     cpu.indirect(0x0A).operand.should.eql 0xDB
 
-  it 'should find oper indirectX', ->
+  it 'should find oper indirectlyX', ->
     cpu.ram[0xBA] = 0xCD
     cpu.ram[0xCD] = 0xDD
     cpu.XR = 0xB0
     cpu.indirectX(0xAA0A).operand.should.eql 0xDD
 
-  it 'should find oper indirectY', ->
+  it 'should find oper indirectlyY', ->
     cpu.ram[0xBA] = 0xCD
     cpu.ram[0xCD] = 0xDD
     cpu.YR = 0xB0
     cpu.indirectY(0xAA0A).operand.should.eql 0xDD
 
 
-  it 'should find oper relative', ->
+  it 'should find oper relatively', ->
     cpu.ram[0xBA] = 0xED
     cpu.PC = 0xB0
     cpu.relative(0x0A).operand.should.eql 0xED

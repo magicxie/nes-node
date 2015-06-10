@@ -9,57 +9,138 @@
   CPU = cpu2a03.CPU;
 
   describe('CPU init', function() {
-    var cpu;
-    it('should has a 16k ram', function() {});
+    return it('should has a 16k ram', function() {
+      var cpu;
+      cpu = new CPU;
+      return cpu.ram.length.should.eql(0x10000);
+    });
+  });
+
+  describe('Memory read', function() {
+    var address, cpu;
     cpu = new CPU;
-    return cpu.ram.length.should.eql(0x10000);
+    address = 0xAA;
+    beforeEach(function() {
+      cpu.ram[address] = 0x11;
+      return cpu.ram[address + 1] = 0x2A;
+    });
+    it('should read 1 byte', function() {
+      return cpu.read(address).should.be.eql(0x11);
+    });
+    it('should read L byte', function() {
+      return cpu.read(address, cpu.READ_LENGTH.L).should.be.eql(0x11);
+    });
+    return it('should read 2 bytes', function() {
+      return cpu.read(address, cpu.READ_LENGTH.HL).should.be.eql(0x2A11);
+    });
+  });
+
+  describe('P register', function() {
+    var cpu;
+    cpu = new CPU;
+    it('Should set P sequentially', function() {
+      cpu.setP(0xDC);
+      cpu.N.should.be.eql(1);
+      cpu.V.should.be.eql(1);
+      cpu.U.should.be.eql(0);
+      cpu.B.should.be.eql(1);
+      cpu.D.should.be.eql(1);
+      cpu.I.should.be.eql(1);
+      cpu.Z.should.be.eql(0);
+      return cpu.C.should.be.eql(0);
+    });
+    return it('Should get P sequentially', function() {
+      cpu.N = 1;
+      cpu.V = 1;
+      cpu.U = 0;
+      cpu.B = 1;
+      cpu.D = 1;
+      cpu.I = 1;
+      cpu.Z = 0;
+      cpu.C = 0;
+      return cpu.getP().should.be.eql(0xDC);
+    });
+  });
+
+  describe('Stack', function() {
+    var cpu;
+    cpu = new CPU;
+    it('Push 1 byte should increase sp once', function() {
+      var prevSP;
+      prevSP = cpu.SP;
+      cpu.push(0xAA);
+      cpu.ram[CPU.prototype.BASE_STACK_ADDR + prevSP].should.be.eql(0xAA);
+      return (prevSP - cpu.SP).should.be.eql(1);
+    });
+    it('Push 2 bytes should increase sp twice', function() {
+      var prevSP;
+      prevSP = cpu.SP;
+      cpu.push(0xAABB);
+      cpu.ram[CPU.prototype.BASE_STACK_ADDR + prevSP - 1].should.be.eql(0xBB);
+      cpu.ram[CPU.prototype.BASE_STACK_ADDR + prevSP].should.be.eql(0xAA);
+      return (prevSP - cpu.SP).should.be.eql(2);
+    });
+    it('Pop 1 byte, sp should remain the same', function() {
+      var prevSP;
+      prevSP = cpu.SP;
+      cpu.push(0xBA);
+      cpu.pop().should.be.eql(0xBA);
+      return cpu.SP.should.be.eql(prevSP);
+    });
+    return it('Push 2 bytes, should pop low byte', function() {
+      var prevSP;
+      prevSP = cpu.SP;
+      cpu.push(0xBACD);
+      cpu.pop().should.be.eql(0xCD);
+      return (prevSP - cpu.SP).should.be.eql(1);
+    });
   });
 
   describe('Addressing mode', function() {
     var cpu;
     cpu = new CPU;
-    it('should find oper immidiate', function() {
+    it('should find oper immediately', function() {
       return cpu.immediate(0xAD).operand.should.eql(0xAD);
     });
-    it('should find oper absolute', function() {
+    it('should find oper absolutely', function() {
       cpu.ram[0xAD] = 0xD;
       return cpu.absolute(0xAD).operand.should.eql(0xD);
     });
-    it('should find oper absoluteX', function() {
+    it('should find oper absolutelyX', function() {
       cpu.XR = 0x0C;
       cpu.ram[0xB9] = 0xDA;
       return cpu.absoluteX(0xAD).operand.should.eql(0xDA);
     });
-    it('should find oper absoluteY', function() {
+    it('should find oper absolutelyY', function() {
       cpu.YR = 0x0D;
       cpu.ram[0xBA] = 0xDB;
       return cpu.absoluteY(0xAD).operand.should.eql(0xDB);
     });
-    it('should find oper immediate', function() {
+    it('should find oper immediately', function() {
       return cpu.immediate(0xBB).operand.should.eql(0xBB);
     });
     it('should find oper implied', function() {
       cpu.AC = 0xDD;
       return cpu.implied(0xAD).operand.should.eql(0xDD);
     });
-    it('should find oper indirect', function() {
+    it('should find oper indirectly', function() {
       cpu.ram[0x0A] = 0xBA;
       cpu.ram[0xBA] = 0xDB;
       return cpu.indirect(0x0A).operand.should.eql(0xDB);
     });
-    it('should find oper indirectX', function() {
+    it('should find oper indirectlyX', function() {
       cpu.ram[0xBA] = 0xCD;
       cpu.ram[0xCD] = 0xDD;
       cpu.XR = 0xB0;
       return cpu.indirectX(0xAA0A).operand.should.eql(0xDD);
     });
-    it('should find oper indirectY', function() {
+    it('should find oper indirectlyY', function() {
       cpu.ram[0xBA] = 0xCD;
       cpu.ram[0xCD] = 0xDD;
       cpu.YR = 0xB0;
       return cpu.indirectY(0xAA0A).operand.should.eql(0xDD);
     });
-    it('should find oper relative', function() {
+    it('should find oper relatively', function() {
       cpu.ram[0xBA] = 0xED;
       cpu.PC = 0xB0;
       return cpu.relative(0x0A).operand.should.eql(0xED);
