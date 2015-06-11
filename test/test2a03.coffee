@@ -29,7 +29,7 @@ describe 'P register', ->
 
   cpu = new CPU
   it 'Should set P sequentially', ->
-    cpu.setP(0xDC) #1101 1100
+    cpu.setSR(0xDC) #1101 1100
     cpu.N.should.be.eql 1
     cpu.V.should.be.eql 1
     cpu.U.should.be.eql 0
@@ -48,7 +48,7 @@ describe 'P register', ->
     cpu.I = 1
     cpu.Z = 0
     cpu.C = 0
-    cpu.getP().should.be.eql(0xDC) #1101 1100
+    cpu.getSR().should.be.eql(0xDC) #1101 1100
 
 describe 'Stack', ->
 

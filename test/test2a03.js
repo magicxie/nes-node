@@ -39,7 +39,7 @@
     var cpu;
     cpu = new CPU;
     it('Should set P sequentially', function() {
-      cpu.setP(0xDC);
+      cpu.setSR(0xDC);
       cpu.N.should.be.eql(1);
       cpu.V.should.be.eql(1);
       cpu.U.should.be.eql(0);
@@ -58,7 +58,7 @@
       cpu.I = 1;
       cpu.Z = 0;
       cpu.C = 0;
-      return cpu.getP().should.be.eql(0xDC);
+      return cpu.getSR().should.be.eql(0xDC);
     });
   });
 
