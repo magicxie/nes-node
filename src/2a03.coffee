@@ -547,7 +547,7 @@ class CPU
   absolute      CPX oper      EC    3     4
   ###
   CPX: (stepInfo) ->
-    @compare(@X, stepInfo.operand)
+    @compare(@XR, stepInfo.operand)
 
   ###
   CPY  Compare Memory and Index Y
@@ -562,7 +562,7 @@ class CPU
   absolute      CPY oper      CC    3     4
   ###
   CPY: (stepInfo) ->
-    @compare(@Y, stepInfo.operand)
+    @compare(@YR, stepInfo.operand)
 
   ###
   DEC  Decrement Memory by One

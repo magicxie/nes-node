@@ -400,9 +400,64 @@ describe 'BIT', ->
     cpu.N.should.be.eql 1
     cpu.V.should.be.eql 1
 
-describe 'OPC 69', ->
+describe 'BRK', ->
   cpu = new CPU
+  cpu.ram[CPU::VECTOR_TABLE.NMI] = 0x34
+  cpu.ram[CPU::VECTOR_TABLE.NMI + 1] = 0x12
+
+  it 'should break, as nmi interruption', ->
+    cpu.BRK()
+    cpu.PC.should.be.eql 0x1234
+
+describe 'Clear bytes', ->
+
+  cpu = new CPU
+
+  it 'should be interrupt disable', ->
+    cpu.CLI()
+    cpu.I.should.be.eql 0
+
+  it 'should be overflow clear', ->
+    cpu.CLV()
+    cpu.V.should.be.eql 0
+
+  it 'should be D clear', ->
+    cpu.CLD()
+    cpu.D.should.be.eql 0
+
+describe 'Compare instructions', ->
+
+  cpu = new CPU
+  cpu.ram[0x10] = 0xDE
+
   beforeEach ->
-    cpu.clear()
-  it 'should be ADC immediate', ->
-    cpu.ram.length.should.eql 0x10000
+    cpu.C = 0
+    cpu.N = 0
+    cpu.Z = 0
+
+  describe 'CMP', ->
+
+    it 'should be A > M', ->
+      cpu.AC = 0xDF
+      cpu.CMP({operand : 0xDE})
+      cpu.Z.should.be.eql 0
+      cpu.N.should.be.eql 0
+      cpu.C.should.be.eql 1
+
+  describe 'CPX', ->
+
+    it 'should be X > M', ->
+      cpu.XR = 0xDF
+      cpu.CPX({operand : 0xDE})
+      cpu.Z.should.be.eql 0
+      cpu.N.should.be.eql 0
+      cpu.C.should.be.eql 1
+
+  describe 'CPY', ->
+
+    it 'should be Y > M', ->
+      cpu.YR = 0xDF
+      cpu.CPY({operand : 0xDE})
+      cpu.Z.should.be.eql 0
+      cpu.N.should.be.eql 0
+      cpu.C.should.be.eql 1

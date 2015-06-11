@@ -31,10 +31,37 @@ module.exports = (grunt) ->
         dest: 'build/<%= pkg.name %>.min.js'
       }
     },
+    blanket: {
+      instrument: {
+        options: {
+          debug: true
+        },
+        files: {
+          'coverage/src': ['src/'],
+          'coverage/test': ['test/']
+        },
+      }
+    },
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec',
+        },
+        src: ['coverage/test/*.js']
+      },
+      coverage: {
+        options: {
+          reporter: 'html-cov',
+          quiet: true,
+          captureFile: 'coverage/coverage.html'
+        },
+        src: ['coverage/test/*.js']
+      }
+    },
     coveralls: {
       options: {
-        dryRun : true,
-        coverageDir: 'src',
+        dryRun: true,
+        coverageDir: 'coverage/',
         force: true,
         recursive: true
       }
@@ -42,11 +69,13 @@ module.exports = (grunt) ->
   }
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.registerTask 'compile', ['coffee']
-
+  grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-blanket');
   grunt.loadNpmTasks 'grunt-coveralls';
-
- # Load the plugin that provides the "uglify" task.
+  # Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks 'grunt-contrib-uglify';
   # Default task(s).
-  grunt.registerTask 'default', ['compile','coveralls','uglify'];
+  grunt.registerTask 'compile', ['coffee']
+  grunt.registerTask 'test', ['blanket', 'mochaTest']
+
+  grunt.registerTask 'default', ['compile', 'test', 'uglify'];
