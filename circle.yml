@@ -1,3 +1,4 @@
 dependencies:
   post:
     - grunt
+    - grunt coveralls
