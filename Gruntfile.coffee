@@ -55,15 +55,12 @@ module.exports = (grunt) ->
           quiet: true,
           captureFile: 'coverage/coverage.html'
         },
-        src: ['coverage/test/*.js']
+        src: ['coverage/src/*.js']
       }
     },
     coveralls: {
       options: {
-        dryRun: true,
-        coverageDir: 'coverage/',
-        force: true,
-        recursive: true
+        src: 'coverage/coverage.html'
       }
     }
   }

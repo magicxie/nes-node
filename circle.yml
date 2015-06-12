@@ -2,3 +2,7 @@ dependencies:
   post:
     - grunt
     - grunt coveralls
+general:
+  artifacts:
+    - "build"
+    - "coverage/coverage.html"
