@@ -22,57 +22,47 @@ module.exports = (grunt) ->
         src: ["**/*.coffee"]
         dest: 'test'
         ext: ".js"
-    uglify: {
-      options: {
+    uglify:
+      options:
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-      },
-      build: {
+
+      build:
         src: 'src/2a03.js',
         dest: 'build/<%= pkg.name %>.min.js'
-      }
-    },
-    blanket: {
-      instrument: {
-        options: {
+
+    blanket:
+      instrument:
+        options:
           debug: true
-        },
-        files: {
+        files:
           'coverage/src': ['src/'],
           'coverage/test': ['test/']
-        },
-      }
-    },
-    mochaTest: {
-      test: {
-        options: {
-          reporter: 'spec',
-        },
+    mochaTest:
+      test:
+        options:
+          reporter: 'spec'
         src: ['coverage/test/*.js']
-      },
-      coverage: {
-        options: {
-          reporter: 'html-cov',
-          quiet: true,
-          captureFile: 'coverage/coverage.html'
-        },
+      coverage:
+        options:
+          reporter: 'mocha-lcov-reporter'
+          quiet: true
+          captureFile: 'coverage/lcov.info'
         src: ['coverage/src/*.js']
-      }
-    },
-    coveralls: {
-      options: {
-        src: 'coverage/coverage.html'
-      }
-    }
+    coveralls:
+      options:
+        src: 'coverage/lcov.info'
+      default :
+        src: 'coverage/lcov.info'
   }
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.loadNpmTasks('grunt-mocha-test');
-  grunt.loadNpmTasks('grunt-blanket');
-  grunt.loadNpmTasks 'grunt-coveralls';
+  grunt.loadNpmTasks 'grunt-mocha-test'
+  grunt.loadNpmTasks 'grunt-blanket'
+  grunt.loadNpmTasks 'grunt-coveralls'
   # Load the plugin that provides the "uglify" task.
-  grunt.loadNpmTasks 'grunt-contrib-uglify';
+  grunt.loadNpmTasks 'grunt-contrib-uglify'
   # Default task(s).
   grunt.registerTask 'compile', ['coffee']
   grunt.registerTask 'test', ['blanket', 'mochaTest']
 
-  grunt.registerTask 'default', ['compile', 'test', 'uglify'];
+  grunt.registerTask 'default', ['compile', 'test', 'uglify']
