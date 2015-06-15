@@ -461,3 +461,11 @@ describe 'Compare instructions', ->
       cpu.Z.should.be.eql 0
       cpu.N.should.be.eql 0
       cpu.C.should.be.eql 1
+
+describe 'Test run', ->
+  cpu = new CPU
+  it 'should get PC', ->
+    cpu.ram[CPU::PC_INIT_VAL] = 0x38 #SEC 0 bytes
+    cpu.ram[CPU::PC_INIT_VAL + 1] = 0x02
+    cpu.run()
+    cpu.PC.should.be.eql CPU::PC_INIT_VAL + 1

@@ -1,12 +1,18 @@
 class CPU
 
-  #16k ram
+  ###
+  16k ram
+  Bytes, Words, Addressing:
+  8 bit bytes, 16 bit words in lobyte-hibyte representation (Little-Endian).
+  16 bit address range, operands follow instruction codes.
+  ###
   RAM_SIZE: 0xFFFF
 
   #Constants for reset and init.
   SP_INIT_VAL: 0xFD
   PC_INIT_VAL: 0xFFFC
 
+  #Stack LIFO, top down, 8 bit range, 0x0100 - 0x01FF
   BASE_STACK_ADDR: 0x100
 
   #interrupt vector table
@@ -130,47 +136,47 @@ class CPU
     Addressing modes
   ###
   #A		....	Accumulator	 	OPC A	 	operand is AC
-  accumulator: () -> {operand: @AC, address: CPU::ADDRESSING_MODE.ACCUMULATOR}
+  accumulator: () -> {operand: @AC, address: CPU::ADDRESSING_MODE.ACCUMULATOR, bytes: 0}
 
   #abs		....	absolute	 	OPC $HHLL	 	operand is address $HHLL
-  absolute: (oper) -> {operand: @ram[oper], address: oper}
+  absolute: (oper) -> {operand: @ram[oper], address: oper, bytes: 2}
 
   #abs,X		....	absolute, X-indexed	 	OPC $HHLL,X	 	operand is address incremented by X with carry
-  absoluteX: (oper) -> {operand: @ram[oper + @XR], address: oper + @XR}
+  absoluteX: (oper) -> {operand: @ram[oper + @XR], address: oper + @XR, bytes: 2}
 
   #abs,Y		....	absolute, Y-indexed	 	OPC $HHLL,Y	 	operand is address incremented by Y with carry
-  absoluteY: (oper) -> {operand: @ram[oper + @YR], address: oper + @YR}
+  absoluteY: (oper) -> {operand: @ram[oper + @YR], address: oper + @YR, bytes: 2}
 
   # #		....	immediate	 	OPC #$BB	 	operand is byte (BB)
-  immediate: (oper) -> {operand: oper, address: CPU::ADDRESSING_MODE.IMMEDIATE}
+  immediate: (oper) -> {operand: oper, address: CPU::ADDRESSING_MODE.IMMEDIATE, bytes:1}
 
   #impl		....	implied	 	OPC	 	operand implied
-  implied: (oper) -> {operand: @AC, address: CPU::ADDRESSING_MODE.IMPLIED}
+  implied: (oper) -> {operand: @AC, address: CPU::ADDRESSING_MODE.IMPLIED, bytes:0}
 
   #ind		....	indirect	 	OPC ($HHLL)	 	operand is effective address; effective address is value of address
-  indirect: (oper) -> {operand: @ram[@ram[oper]], address: @ram[oper]}
+  indirect: (oper) -> {operand: @ram[@ram[oper]], address: @ram[oper], bytes:2}
 
   #X,ind		....	X-indexed, indirect	 	OPC ($BB,X)
   # operand is effective zeropage address; effective address is byte (BB) incremented by X without carry
-  indirectX: (oper) -> {operand: @ram[@ram[(oper & 0x00FF) + @XR]], address: @ram[(oper & 0x00FF) + @XR]}
+  indirectX: (oper) -> {operand: @ram[@ram[(oper & 0x00FF) + @XR]], address: @ram[(oper & 0x00FF) + @XR], bytes:1}
 
   #ind,Y		....	indirect, Y-indexed	 	OPC ($LL),Y
   # operand is effective address incremented by Y with carry; effective address is word at zeropage address
-  indirectY: (oper) -> {operand: @ram[@ram[(oper & 0x00FF) + @YR]], address: @ram[(oper & 0x00FF) + @YR]}
+  indirectY: (oper) -> {operand: @ram[@ram[(oper & 0x00FF) + @YR]], address: @ram[(oper & 0x00FF) + @YR], bytes:1}
 
   #rel		....	relative	 	OPC $BB	 	branch target is PC + offset (BB), bit 7 signifies negative offset
-  relative: (oper) -> {operand: @ram[@PC + oper], address: @PC + oper}
+  relative: (oper) -> {operand: @ram[@PC + oper], address: @PC + oper, bytes:1}
 
   #zpg		....	zeropage	 	OPC $LL	 	operand is of address; address hibyte : zero ($00xx)
-  zeropage: (oper) -> {operand: @ram[oper & 0x00FF], address: oper & 0x00FF}
+  zeropage: (oper) -> {operand: @ram[oper & 0x00FF], address: oper & 0x00FF, bytes:1}
 
   #zpg,X		....	zeropage, X-indexed	 	OPC $LL,X
   # operand is address incremented by X; address hibyte : zero ($00xx); no page transition
-  zeropageX: (oper) -> {operand: @ram[(oper + @XR) & 0x00FF], address: oper + @XR};
+  zeropageX: (oper) -> {operand: @ram[(oper + @XR) & 0x00FF], address: oper + @XR, bytes:1};
 
   #zpg,Y		....	zeropage, Y-indexed	 	OPC $LL,Y
   # operand is address incremented by Y; address hibyte : zero ($00xx); no page transition
-  zeropageY: (oper) -> {operand: @ram[(oper + @YR) & 0x00FF], address: oper + @YR};
+  zeropageY: (oper) -> {operand: @ram[(oper + @YR) & 0x00FF], address: oper + @YR, bytes:1};
 
   addressing: () ->
     if arguments.length == 2
@@ -214,6 +220,19 @@ class CPU
 
   addCycleOnBranch: (stepInfo) ->
     @cycles += 1;
+
+  run: () ->
+
+    oprcode = @ram[@PC]
+    oprcodeInfo = CPU::OPRCODES[oprcode]
+    console.log "OPC:", oprcodeInfo.instruction
+    instruction = oprcodeInfo.instruction
+    addressMode = oprcodeInfo.addressMode.call(this,(oprcode + 1))
+    instruction.call(this, addressMode)
+
+    #increase PC
+    @PC += (addressMode.bytes + 1)
+
 
   ###
     Instructions
@@ -1176,4 +1195,254 @@ class CPU
     @AC = @YR
     @setZN(@AC)
 
+
+  OPRCODES: {
+    0x00: {instruction: CPU::BRK, addressMode: CPU::implied},
+    0x01: {instruction: CPU::ORA, addressMode: CPU::indirect},
+  #0x03: { instruction : CPU::SLO,addressMode : CPU::indirect},
+  #0x04: { instruction : CPU::NOP,addressMode : CPU::zeropage},
+    0x05: {instruction: CPU::ORA, addressMode: CPU::zeropage},
+    0x06: {instruction: CPU::ASL, addressMode: CPU::zeropage},
+  #0x07: { instruction : CPU::SLO,addressMode : CPU::zeropage},
+    0x08: {instruction: CPU::PHP, addressMode: CPU::implied},
+    0x09: {instruction: CPU::ORA, addressMode: CPU::immediate},
+    0x0A: {instruction: CPU::ASL, addressMode: CPU::accumulator},
+  #0x0B: { instruction : CPU::ANC,addressMode : CPU::immediate},
+  #0x0C: { instruction : CPU::NOP,addressMode : CPU::absolute},
+    0x0D: {instruction: CPU::ORA, addressMode: CPU::absolute},
+    0x0E: {instruction: CPU::ASL, addressMode: CPU::absolute},
+  #0x0F: { instruction : CPU::SLO,addressMode : CPU::absolute},
+    0x10: {instruction: CPU::BPL, addressMode: CPU::relative},
+    0x11: {instruction: CPU::ORA, addressMode: CPU::indirectY},
+  #0x13: { instruction : CPU::SLO ,addressMode : CPU::indirectY},
+  #0x14: { instruction : CPU::NOP,addressMode : CPU::indirectX},
+    0x15: {instruction: CPU::ORA, addressMode: CPU::indirectX},
+    0x16: {instruction: CPU::ASL, addressMode: CPU::indirectX},
+  #0x17: { instruction : CPU::SLO,addressMode : CPU::indirectX},
+    0x18: {instruction: CPU::CLC, addressMode: CPU::implied},
+    0x19: {instruction: CPU::ORA, addressMode: CPU::absoluteY},
+  #0x1A: { instruction : CPU::NOP},
+  #0x1B: { instruction : CPU::SLO,addressMode : CPU::absoluteY},
+  #0x1C: { instruction : CPU::NOP,addressMode : CPU::absoluteX},
+    0x1D: {instruction: CPU::ORA, addressMode: CPU::absoluteX},
+    0x1E: {instruction: CPU::ASL, addressMode: CPU::absoluteX},
+  #0x1F: { instruction : CPU::SLO,addressMode : CPU::absoluteX},
+    0x20: {instruction: CPU::JSR, addressMode: CPU::absolute},
+    0x21: {instruction: CPU::AND, addressMode: CPU::indirect},
+  #0x23: { instruction : CPU::RLA,addressMode : CPU::indirect},
+    0x24: {instruction: CPU::BIT, addressMode: CPU::zeropage},
+    0x25: {instruction: CPU::AND, addressMode: CPU::zeropage},
+    0x26: {instruction: CPU::ROL, addressMode: CPU::zeropage},
+  #0x27: { instruction : CPU::RLA,addressMode : CPU::zeropage},
+    0x28: {instruction: CPU::PLP, addressMode: CPU::implied},
+    0x29: {instruction: CPU::AND, addressMode: CPU::immediate},
+    0x2A: {instruction: CPU::ROL, addressMode: CPU::accumulator},
+  #0x2B: { instruction : CPU::ANC,addressMode : CPU::immediate},
+    0x2C: {instruction: CPU::BIT, addressMode: CPU::absolute},
+    0x2D: {instruction: CPU::AND, addressMode: CPU::absolute},
+    0x2E: {instruction: CPU::ROL, addressMode: CPU::absolute},
+  #0x2F: { instruction : CPU::RLA,addressMode : CPU::absolute},
+    0x30: {instruction: CPU::BMI, addressMode: CPU::relative},
+    0x31: {instruction: CPU::AND, addressMode: CPU::indirectY},
+  #0x33: { instruction : CPU::RLA ,addressMode : CPU::indirectY},
+  #0x34: { instruction : CPU::NOP,addressMode : CPU::indirectX},
+    0x35: {instruction: CPU::AND, addressMode: CPU::indirectX},
+    0x36: {instruction: CPU::ROL, addressMode: CPU::indirectX},
+  #0x37: { instruction : CPU::RLA,addressMode : CPU::indirectX},
+    0x38: {instruction: CPU::SEC, addressMode: CPU::implied},
+    0x39: {instruction: CPU::AND, addressMode: CPU::absoluteY},
+  #0x3A: { instruction : CPU::NOP},
+  #0x3B: { instruction : CPU::RLA,addressMode : CPU::absoluteY},
+    0x3C: {instruction: CPU::NOP, addressMode: CPU::absoluteX},
+    0x3D: {instruction: CPU::AND, addressMode: CPU::absoluteX},
+    0x3E: {instruction: CPU::ROL, addressMode: CPU::absoluteX},
+  #0x3F: { instruction : CPU::RLA,addressMode : CPU::absoluteX},
+    0x40: {instruction: CPU::RTI, addressMode: CPU::implied},
+    0x41: {instruction: CPU::EOR, addressMode: CPU::indirect},
+  #0x43: { instruction : CPU::SRE,addressMode : CPU::indirect},
+  #0x44: { instruction : CPU::NOP,addressMode : CPU::zeropage},
+    0x45: {instruction: CPU::EOR, addressMode: CPU::zeropage},
+    0x46: {instruction: CPU::LSR, addressMode: CPU::zeropage},
+  #0x47: { instruction : CPU::SRE,addressMode : CPU::zeropage},
+    0x48: {instruction: CPU::PHA, addressMode: CPU::implied},
+    0x49: {instruction: CPU::EOR, addressMode: CPU::immediate},
+    0x4A: {instruction: CPU::LSR, addressMode: CPU::accumulator},
+  #0x4B: { instruction : CPU::ASR,addressMode : CPU::immediate},
+    0x4C: {instruction: CPU::JMP, addressMode: CPU::absolute},
+    0x4D: {instruction: CPU::EOR, addressMode: CPU::absolute},
+    0x4E: {instruction: CPU::LSR, addressMode: CPU::absolute},
+  #0x4F: { instruction : CPU::SRE,addressMode : CPU::absolute},
+    0x50: {instruction: CPU::BVC, addressMode: CPU::relative},
+    0x51: {instruction: CPU::EOR, addressMode: CPU::indirectY},
+  #0x53: { instruction : CPU::SRE ,addressMode : CPU::indirectY},
+  #0x54: { instruction : CPU::NOP,addressMode : CPU::indirectX},
+    0x55: {instruction: CPU::EOR, addressMode: CPU::indirectX},
+    0x56: {instruction: CPU::LSR, addressMode: CPU::indirectX},
+  #0x57: { instruction : CPU::SRE,addressMode : CPU::indirectX},
+    0x58: {instruction: CPU::CLI, addressMode: CPU::implied},
+    0x59: {instruction: CPU::EOR, addressMode: CPU::absoluteY},
+  #0x5A: { instruction : CPU::NOP},
+  #0x5B: { instruction : CPU::SRE,addressMode : CPU::absoluteY},
+  #0x5C: { instruction : CPU::NOP,addressMode : CPU::absoluteX},
+    0x5D: {instruction: CPU::EOR, addressMode: CPU::absoluteX},
+    0x5E: {instruction: CPU::LSR, addressMode: CPU::absoluteX},
+  #0x5F: { instruction : CPU::SRE,addressMode : CPU::absoluteX},
+    0x60: {instruction: CPU::RTS, addressMode: CPU::implied},
+    0x61: {instruction: CPU::ADC, addressMode: CPU::indirect},
+  #0x63: { instruction : CPU::RRA,addressMode : CPU::indirect},
+  #0x64: { instruction : CPU::NOP,addressMode : CPU::zeropage},
+    0x65: {instruction: CPU::ADC, addressMode: CPU::zeropage},
+    0x66: {instruction: CPU::ROR, addressMode: CPU::zeropage},
+  #0x67: { instruction : CPU::RRA,addressMode : CPU::zeropage},
+    0x68: {instruction: CPU::PLA, addressMode: CPU::implied},
+    0x69: {instruction: CPU::ADC, addressMode: CPU::immediate},
+    0x6A: {instruction: CPU::ROR, addressMode: CPU::accumulator},
+  #0x6B: { instruction : CPU::ARR,addressMode : CPU::immediate},
+    0x6C: {instruction: CPU::JMP, addressMode: CPU::indirect},
+    0x6D: {instruction: CPU::ADC, addressMode: CPU::absolute},
+    0x6E: {instruction: CPU::ROR, addressMode: CPU::absolute},
+  #0x6F: { instruction : CPU::RRA,addressMode : CPU::absolute},
+    0x70: {instruction: CPU::BVS, addressMode: CPU::relative},
+    0x71: {instruction: CPU::ADC, addressMode: CPU::indirectY},
+  #0x73: { instruction : CPU::RRA ,addressMode : CPU::indirectY},
+  #0x74: { instruction : CPU::NOP,addressMode : CPU::indirectX},
+    0x75: {instruction: CPU::ADC, addressMode: CPU::indirectX},
+    0x76: {instruction: CPU::ROR, addressMode: CPU::indirectX},
+  #0x77: { instruction : CPU::RRA,addressMode : CPU::indirectX},
+    0x78: {instruction: CPU::SEI, addressMode: CPU::implied},
+    0x79: {instruction: CPU::ADC, addressMode: CPU::absoluteY},
+  #0x7A: { instruction : CPU::NOP},
+  #0x7B: { instruction : CPU::RRA,addressMode : CPU::absoluteY},
+  #0x7C: { instruction : CPU::NOP,addressMode : CPU::absoluteX},
+    0x7D: {instruction: CPU::ADC, addressMode: CPU::absoluteX},
+    0x7E: {instruction: CPU::ROR, addressMode: CPU::absoluteX},
+  #0x7F: { instruction : CPU::RRA,addressMode : CPU::absoluteX},
+  #0x80: { instruction : CPU::NOP,addressMode : CPU::immediate},
+    0x81: {instruction: CPU::STA, addressMode: CPU::indirect},
+    0x82: {instruction: CPU::NOP, addressMode: CPU::immediate},
+  #0x83: { instruction : CPU::SAX,addressMode : CPU::indirect},
+    0x84: {instruction: CPU::STY, addressMode: CPU::zeropage},
+    0x85: {instruction: CPU::STA, addressMode: CPU::zeropage},
+    0x86: {instruction: CPU::STX, addressMode: CPU::zeropage},
+  #0x87: { instruction : CPU::SAX,addressMode : CPU::zeropage},
+    0x88: {instruction: CPU::DEY, addressMode: CPU::implied},
+  #0x89: { instruction : CPU::NOP,addressMode : CPU::immediate},
+    0x8A: {instruction: CPU::TXA, addressMode: CPU::implied},
+  #0x8B: { instruction : CPU::ANE,addressMode : CPU::immediate},
+    0x8C: {instruction: CPU::STY, addressMode: CPU::absolute},
+    0x8D: {instruction: CPU::STA, addressMode: CPU::absolute},
+    0x8E: {instruction: CPU::STX, addressMode: CPU::absolute},
+  #0x8F: { instruction : CPU::SAX,addressMode : CPU::absolute},
+    0x90: {instruction: CPU::BCC, addressMode: CPU::relative},
+    0x91: {instruction: CPU::STA, addressMode: CPU::indirectY},
+  #0x93: { instruction : CPU::SHA ,addressMode : CPU::indirectY},
+    0x94: {instruction: CPU::STY, addressMode: CPU::indirectX},
+    0x95: {instruction: CPU::STA, addressMode: CPU::indirectX},
+    0x96: {instruction: CPU::STX, addressMode: CPU::zeropageY},
+  #0x97: { instruction : CPU::SAX,addressMode : CPU::zeropageY},
+    0x98: {instruction: CPU::TYA, addressMode: CPU::implied},
+    0x99: {instruction: CPU::STA, addressMode: CPU::absoluteY},
+    0x9A: {instruction: CPU::TXS, addressMode: CPU::implied},
+  #0x9B: { instruction : CPU::SHS,addressMode : CPU::absoluteY},
+  #0x9C: { instruction : CPU::SHY,addressMode : CPU::absoluteX},
+    0x9D: {instruction: CPU::STA, addressMode: CPU::absoluteX},
+  #0x9E: { instruction : CPU::SHX,addressMode : CPU::absoluteY},
+  #0x9F: { instruction : CPU::SHA,addressMode : CPU::absoluteY},
+    0xA0: {instruction: CPU::LDY, addressMode: CPU::immediate},
+    0xA1: {instruction: CPU::LDA, addressMode: CPU::indirect},
+    0xA2: {instruction: CPU::LDX, addressMode: CPU::immediate},
+  #0xA3: { instruction : CPU::LAX,addressMode : CPU::indirect},
+    0xA4: {instruction: CPU::LDY, addressMode: CPU::zeropage},
+    0xA5: {instruction: CPU::LDA, addressMode: CPU::zeropage},
+    0xA6: {instruction: CPU::LDX, addressMode: CPU::zeropage},
+  #0xA7: { instruction : CPU::LAX,addressMode : CPU::zeropage},
+    0xA8: {instruction: CPU::TAY, addressMode: CPU::implied},
+    0xA9: {instruction: CPU::LDA, addressMode: CPU::immediate},
+    0xAA: {instruction: CPU::TAX, addressMode: CPU::implied},
+  #0xAB: { instruction : CPU::LAX,addressMode : CPU::immediate},
+    0xAC: {instruction: CPU::LDY, addressMode: CPU::absolute},
+    0xAD: {instruction: CPU::LDA, addressMode: CPU::absolute},
+    0xAE: {instruction: CPU::LDX, addressMode: CPU::absolute},
+  #0xAF: { instruction : CPU::LAX,addressMode : CPU::absolute},
+    0xB0: {instruction: CPU::BCS, addressMode: CPU::relative},
+    0xB1: {instruction: CPU::LDA, addressMode: CPU::indirectY},
+  #0xB3: { instruction : CPU::LAX ,addressMode : CPU::indirectY},
+    0xB4: {instruction: CPU::LDY, addressMode: CPU::indirectX},
+    0xB5: {instruction: CPU::LDA, addressMode: CPU::indirectX},
+    0xB6: {instruction: CPU::LDX, addressMode: CPU::zeropageY},
+  #0xB7: { instruction : CPU::LAX,addressMode : CPU::zeropageY},
+    0xB8: {instruction: CPU::CLV, addressMode: CPU::implied},
+    0xB9: {instruction: CPU::LDA, addressMode: CPU::absoluteY},
+    0xBA: {instruction: CPU::TSX, addressMode: CPU::implied},
+  #0xBB: { instruction : CPU::LAS,addressMode : CPU::absoluteY},
+    0xBC: {instruction: CPU::LDY, addressMode: CPU::absoluteX},
+    0xBD: {instruction: CPU::LDA, addressMode: CPU::absoluteX},
+    0xBE: {instruction: CPU::LDX, addressMode: CPU::absoluteY},
+  #0xBF: { instruction : CPU::LAX,addressMode : CPU::absoluteY},
+    0xC0: {instruction: CPU::CPY, addressMode: CPU::immediate},
+    0xC1: {instruction: CPU::CMP, addressMode: CPU::indirect},
+    0xC2: {instruction: CPU::NOP, addressMode: CPU::immediate},
+  #0xC3: { instruction : CPU::DCP,addressMode : CPU::indirect},
+    0xC4: {instruction: CPU::CPY, addressMode: CPU::zeropage},
+    0xC5: {instruction: CPU::CMP, addressMode: CPU::zeropage},
+    0xC6: {instruction: CPU::DEC, addressMode: CPU::zeropage},
+  #0xC7: { instruction : CPU::DCP,addressMode : CPU::zeropage},
+    0xC8: {instruction: CPU::INY, addressMode: CPU::implied},
+    0xC9: {instruction: CPU::CMP, addressMode: CPU::immediate},
+    0xCA: {instruction: CPU::DEX, addressMode: CPU::implied},
+  #0xCB: { instruction : CPU::SBX,addressMode : CPU::immediate},
+    0xCC: {instruction: CPU::CPY, addressMode: CPU::absolute},
+    0xCD: {instruction: CPU::CMP, addressMode: CPU::absolute},
+    0xCE: {instruction: CPU::DEC, addressMode: CPU::absolute},
+  #0xCF: { instruction : CPU::DCP,addressMode : CPU::absolute},
+    0xD0: {instruction: CPU::BNE, addressMode: CPU::relative},
+    0xD1: {instruction: CPU::CMP, addressMode: CPU::indirectY},
+  #0xD3: { instruction : CPU::DCP ,addressMode : CPU::indirectY},
+  #0xD4: { instruction : CPU::NOP,addressMode : CPU::indirectX},
+    0xD5: {instruction: CPU::CMP, addressMode: CPU::indirectX},
+    0xD6: {instruction: CPU::DEC, addressMode: CPU::indirectX},
+  #0xD7: { instruction : CPU::DCP,addressMode : CPU::indirectX},
+    0xD8: {instruction: CPU::CLD, addressMode: CPU::implied},
+    0xD9: {instruction: CPU::CMP, addressMode: CPU::absoluteY},
+  #0xDA: { instruction : CPU::NOP},
+  #0xDB: { instruction : CPU::DCP,addressMode : CPU::absoluteY},
+  #0xDC: { instruction : CPU::NOP,addressMode : CPU::absoluteX},
+    0xDD: {instruction: CPU::CMP, addressMode: CPU::absoluteX},
+    0xDE: {instruction: CPU::DEC, addressMode: CPU::absoluteX},
+  #0xDF: { instruction : CPU::DCP,addressMode : CPU::absoluteX},
+    0xE0: {instruction: CPU::CPX, addressMode: CPU::immediate},
+    0xE1: {instruction: CPU::SBC, addressMode: CPU::indirect},
+    0xE2: {instruction: CPU::NOP, addressMode: CPU::immediate},
+  #0xE3: { instruction : CPU::ISB,addressMode : CPU::indirect},
+    0xE4: {instruction: CPU::CPX, addressMode: CPU::zeropage},
+    0xE5: {instruction: CPU::SBC, addressMode: CPU::zeropage},
+    0xE6: {instruction: CPU::INC, addressMode: CPU::zeropage},
+  #0xE7: { instruction : CPU::ISB,addressMode : CPU::zeropage},
+    0xE8: {instruction: CPU::INX, addressMode: CPU::implied},
+    0xE9: {instruction: CPU::SBC, addressMode: CPU::immediate},
+    0xEA: {instruction: CPU::NOP, addressMode: CPU::implied},
+  #0xEB: { instruction : CPU::SBC,addressMode : CPU::immediate},
+    0xEC: {instruction: CPU::CPX, addressMode: CPU::absolute},
+    0xED: {instruction: CPU::SBC, addressMode: CPU::absolute},
+    0xEE: {instruction: CPU::INC, addressMode: CPU::absolute},
+  #0xEF: { instruction : CPU::ISB,addressMode : CPU::absolute},
+    0xF0: {instruction: CPU::BEQ, addressMode: CPU::relative},
+    0xF1: {instruction: CPU::SBC, addressMode: CPU::indirectY},
+  #0xF3: { instruction : CPU::ISB ,addressMode : CPU::indirectY},
+    0xF4: {instruction: CPU::NOP, addressMode: CPU::zeropageX},
+    0xF5: {instruction: CPU::SBC, addressMode: CPU::indirectX},
+    0xF6: {instruction: CPU::INC, addressMode: CPU::indirectX},
+  #0xF7: { instruction : CPU::ISB,addressMode : CPU::indirectX},
+    0xF8: {instruction: CPU::SED, addressMode: CPU::implied},
+    0xF9: {instruction: CPU::SBC, addressMode: CPU::absoluteY},
+  #0xFA: { instruction : CPU::NOP},
+  #0xFB: { instruction : CPU::ISB,addressMode : CPU::absoluteY},
+  #0xFC: { instruction : CPU::NOP,addressMode : CPU::absoluteX},
+    0xFD: {instruction: CPU::SBC, addressMode: CPU::absoluteX},
+    0xFE: {instruction: CPU::INC, addressMode: CPU::absoluteX},
+  #0xFF: { instruction : CPU::ISB abs,x}
+
+  }
+
 exports.CPU = CPU
+exports.OPRCODES = CPU::OPRCODES
