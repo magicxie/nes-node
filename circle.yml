@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - npm i -g grunt
+    - npm i -g grunt-cli
   post:
     - grunt
     - grunt coveralls
