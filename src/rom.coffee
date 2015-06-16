@@ -27,7 +27,6 @@ class ROM
   parse :(file) ->
 
     fs = require 'fs'
-
     @romBuffer = fs.readFileSync file
 
     @pc = @romBuffer.readIntLE(4)
