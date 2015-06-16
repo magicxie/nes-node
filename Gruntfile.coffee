@@ -40,6 +40,7 @@ module.exports = (grunt) ->
     mochaTest:
       test:
         options:
+          timeout: 10000
           reporter: 'spec'
         src: ['coverage/test/*.js']
       coverage:

@@ -11,7 +11,7 @@ describe 'When load rom file', ->
   cpu = new cpu2a03.CPU
 
   it 'should no error', ->
-    rom.parse 'roms/NES Test Cart (Official Nintendo) (U) [!].nes'
+    rom.parse './test/roms/NES_Test_Cart.nes'
 
   it 'should print valid prg banks', ->
     program = rom.getProgram()

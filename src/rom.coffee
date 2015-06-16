@@ -27,6 +27,8 @@ class ROM
   parse :(file) ->
 
     fs = require 'fs'
+    fs.readdir './coverage/', (e,f)-> console.log f
+
     @romBuffer = fs.readFileSync file
 
     @pc = @romBuffer.readIntLE(4)
