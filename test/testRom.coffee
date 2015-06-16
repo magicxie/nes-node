@@ -13,9 +13,15 @@ describe 'When load rom file', ->
 
   it 'should print valid prg banks', ->
     program = rom.getProgram()
+    #gitconsole.log program
     skip = 0
     for i,j in program when skip = 0
+      console.log i,j
       oprcode = OPRCODES[j]
       if oprcode
         skip = oprcode.addressMode.bytes
+        console.log oprcode.instruction.name
+      else
+        skip--
+
 
