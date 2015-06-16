@@ -1442,627 +1442,939 @@
     CPU.prototype.OPRCODES = {
       0x00: {
         instruction: CPU.prototype.BRK,
-        addressMode: CPU.prototype.implied
+        text: 'BRK',
+        addressMode: CPU.prototype.implied,
+        desc: 'BRK implied'
       },
       0x01: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.indirect
+        text: 'ORA',
+        addressMode: CPU.prototype.indirect,
+        desc: 'ORA indirect'
       },
       0x05: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.zeropage
+        text: 'ORA',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'ORA zeropage'
       },
       0x06: {
         instruction: CPU.prototype.ASL,
-        addressMode: CPU.prototype.zeropage
+        text: 'ASL',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'ASL zeropage'
       },
       0x08: {
         instruction: CPU.prototype.PHP,
-        addressMode: CPU.prototype.implied
+        text: 'PHP',
+        addressMode: CPU.prototype.implied,
+        desc: 'PHP implied'
       },
       0x09: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.immediate
+        text: 'ORA',
+        addressMode: CPU.prototype.immediate,
+        desc: 'ORA immediate'
       },
       0x0A: {
         instruction: CPU.prototype.ASL,
-        addressMode: CPU.prototype.accumulator
+        text: 'ASL',
+        addressMode: CPU.prototype.accumulator,
+        desc: 'ASL accumulator'
       },
       0x0D: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.absolute
+        text: 'ORA',
+        addressMode: CPU.prototype.absolute,
+        desc: 'ORA absolute'
       },
       0x0E: {
         instruction: CPU.prototype.ASL,
-        addressMode: CPU.prototype.absolute
+        text: 'ASL',
+        addressMode: CPU.prototype.absolute,
+        desc: 'ASL absolute'
       },
       0x10: {
         instruction: CPU.prototype.BPL,
-        addressMode: CPU.prototype.relative
+        text: 'BPL',
+        addressMode: CPU.prototype.relative,
+        desc: 'BPL relative'
       },
       0x11: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.indirectY
+        text: 'ORA',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'ORA indirectY'
       },
       0x15: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.indirectX
+        text: 'ORA',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'ORA indirectX'
       },
       0x16: {
         instruction: CPU.prototype.ASL,
-        addressMode: CPU.prototype.indirectX
+        text: 'ASL',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'ASL indirectX'
       },
       0x18: {
         instruction: CPU.prototype.CLC,
-        addressMode: CPU.prototype.implied
+        text: 'CLC',
+        addressMode: CPU.prototype.implied,
+        desc: 'CLC implied'
       },
       0x19: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.absoluteY
+        text: 'ORA',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'ORA absoluteY'
       },
       0x1D: {
         instruction: CPU.prototype.ORA,
-        addressMode: CPU.prototype.absoluteX
+        text: 'ORA',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'ORA absoluteX'
       },
       0x1E: {
         instruction: CPU.prototype.ASL,
-        addressMode: CPU.prototype.absoluteX
+        text: 'ASL',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'ASL absoluteX'
       },
       0x20: {
         instruction: CPU.prototype.JSR,
-        addressMode: CPU.prototype.absolute
+        text: 'JSR',
+        addressMode: CPU.prototype.absolute,
+        desc: 'JSR absolute'
       },
       0x21: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.indirect
+        text: 'AND',
+        addressMode: CPU.prototype.indirect,
+        desc: 'AND indirect'
       },
       0x24: {
         instruction: CPU.prototype.BIT,
-        addressMode: CPU.prototype.zeropage
+        text: 'BIT',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'BIT zeropage'
       },
       0x25: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.zeropage
+        text: 'AND',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'AND zeropage'
       },
       0x26: {
         instruction: CPU.prototype.ROL,
-        addressMode: CPU.prototype.zeropage
+        text: 'ROL',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'ROL zeropage'
       },
       0x28: {
         instruction: CPU.prototype.PLP,
-        addressMode: CPU.prototype.implied
+        text: 'PLP',
+        addressMode: CPU.prototype.implied,
+        desc: 'PLP implied'
       },
       0x29: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.immediate
+        text: 'AND',
+        addressMode: CPU.prototype.immediate,
+        desc: 'AND immediate'
       },
       0x2A: {
         instruction: CPU.prototype.ROL,
-        addressMode: CPU.prototype.accumulator
+        text: 'ROL',
+        addressMode: CPU.prototype.accumulator,
+        desc: 'ROL accumulator'
       },
       0x2C: {
         instruction: CPU.prototype.BIT,
-        addressMode: CPU.prototype.absolute
+        text: 'BIT',
+        addressMode: CPU.prototype.absolute,
+        desc: 'BIT absolute'
       },
       0x2D: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.absolute
+        text: 'AND',
+        addressMode: CPU.prototype.absolute,
+        desc: 'AND absolute'
       },
       0x2E: {
         instruction: CPU.prototype.ROL,
-        addressMode: CPU.prototype.absolute
+        text: 'ROL',
+        addressMode: CPU.prototype.absolute,
+        desc: 'ROL absolute'
       },
       0x30: {
         instruction: CPU.prototype.BMI,
-        addressMode: CPU.prototype.relative
+        text: 'BMI',
+        addressMode: CPU.prototype.relative,
+        desc: 'BMI relative'
       },
       0x31: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.indirectY
+        text: 'AND',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'AND indirectY'
       },
       0x35: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.indirectX
+        text: 'AND',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'AND indirectX'
       },
       0x36: {
         instruction: CPU.prototype.ROL,
-        addressMode: CPU.prototype.indirectX
+        text: 'ROL',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'ROL indirectX'
       },
       0x38: {
         instruction: CPU.prototype.SEC,
-        addressMode: CPU.prototype.implied
+        text: 'SEC',
+        addressMode: CPU.prototype.implied,
+        desc: 'SEC implied'
       },
       0x39: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.absoluteY
+        text: 'AND',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'AND absoluteY'
       },
       0x3C: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.absoluteX
+        text: 'NOP',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'NOP absoluteX'
       },
       0x3D: {
         instruction: CPU.prototype.AND,
-        addressMode: CPU.prototype.absoluteX
+        text: 'AND',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'AND absoluteX'
       },
       0x3E: {
         instruction: CPU.prototype.ROL,
-        addressMode: CPU.prototype.absoluteX
+        text: 'ROL',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'ROL absoluteX'
       },
       0x40: {
         instruction: CPU.prototype.RTI,
-        addressMode: CPU.prototype.implied
+        text: 'RTI',
+        addressMode: CPU.prototype.implied,
+        desc: 'RTI implied'
       },
       0x41: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.indirect
+        text: 'EOR',
+        addressMode: CPU.prototype.indirect,
+        desc: 'EOR indirect'
       },
       0x45: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.zeropage
+        text: 'EOR',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'EOR zeropage'
       },
       0x46: {
         instruction: CPU.prototype.LSR,
-        addressMode: CPU.prototype.zeropage
+        text: 'LSR',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'LSR zeropage'
       },
       0x48: {
         instruction: CPU.prototype.PHA,
-        addressMode: CPU.prototype.implied
+        text: 'PHA',
+        addressMode: CPU.prototype.implied,
+        desc: 'PHA implied'
       },
       0x49: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.immediate
+        text: 'EOR',
+        addressMode: CPU.prototype.immediate,
+        desc: 'EOR immediate'
       },
       0x4A: {
         instruction: CPU.prototype.LSR,
-        addressMode: CPU.prototype.accumulator
+        text: 'LSR',
+        addressMode: CPU.prototype.accumulator,
+        desc: 'LSR accumulator'
       },
       0x4C: {
         instruction: CPU.prototype.JMP,
-        addressMode: CPU.prototype.absolute
+        text: 'JMP',
+        addressMode: CPU.prototype.absolute,
+        desc: 'JMP absolute'
       },
       0x4D: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.absolute
+        text: 'EOR',
+        addressMode: CPU.prototype.absolute,
+        desc: 'EOR absolute'
       },
       0x4E: {
         instruction: CPU.prototype.LSR,
-        addressMode: CPU.prototype.absolute
+        text: 'LSR',
+        addressMode: CPU.prototype.absolute,
+        desc: 'LSR absolute'
       },
       0x50: {
         instruction: CPU.prototype.BVC,
-        addressMode: CPU.prototype.relative
+        text: 'BVC',
+        addressMode: CPU.prototype.relative,
+        desc: 'BVC relative'
       },
       0x51: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.indirectY
+        text: 'EOR',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'EOR indirectY'
       },
       0x55: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.indirectX
+        text: 'EOR',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'EOR indirectX'
       },
       0x56: {
         instruction: CPU.prototype.LSR,
-        addressMode: CPU.prototype.indirectX
+        text: 'LSR',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'LSR indirectX'
       },
       0x58: {
         instruction: CPU.prototype.CLI,
-        addressMode: CPU.prototype.implied
+        text: 'CLI',
+        addressMode: CPU.prototype.implied,
+        desc: 'CLI implied'
       },
       0x59: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.absoluteY
+        text: 'EOR',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'EOR absoluteY'
       },
       0x5D: {
         instruction: CPU.prototype.EOR,
-        addressMode: CPU.prototype.absoluteX
+        text: 'EOR',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'EOR absoluteX'
       },
       0x5E: {
         instruction: CPU.prototype.LSR,
-        addressMode: CPU.prototype.absoluteX
+        text: 'LSR',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'LSR absoluteX'
       },
       0x60: {
         instruction: CPU.prototype.RTS,
-        addressMode: CPU.prototype.implied
+        text: 'RTS',
+        addressMode: CPU.prototype.implied,
+        desc: 'RTS implied'
       },
       0x61: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.indirect
+        text: 'ADC',
+        addressMode: CPU.prototype.indirect,
+        desc: 'ADC indirect'
       },
       0x65: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.zeropage
+        text: 'ADC',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'ADC zeropage'
       },
       0x66: {
         instruction: CPU.prototype.ROR,
-        addressMode: CPU.prototype.zeropage
+        text: 'ROR',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'ROR zeropage'
       },
       0x68: {
         instruction: CPU.prototype.PLA,
-        addressMode: CPU.prototype.implied
+        text: 'PLA',
+        addressMode: CPU.prototype.implied,
+        desc: 'PLA implied'
       },
       0x69: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.immediate
+        text: 'ADC',
+        addressMode: CPU.prototype.immediate,
+        desc: 'ADC immediate'
       },
       0x6A: {
         instruction: CPU.prototype.ROR,
-        addressMode: CPU.prototype.accumulator
+        text: 'ROR',
+        addressMode: CPU.prototype.accumulator,
+        desc: 'ROR accumulator'
       },
       0x6C: {
         instruction: CPU.prototype.JMP,
-        addressMode: CPU.prototype.indirect
+        text: 'JMP',
+        addressMode: CPU.prototype.indirect,
+        desc: 'JMP indirect'
       },
       0x6D: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.absolute
+        text: 'ADC',
+        addressMode: CPU.prototype.absolute,
+        desc: 'ADC absolute'
       },
       0x6E: {
         instruction: CPU.prototype.ROR,
-        addressMode: CPU.prototype.absolute
+        text: 'ROR',
+        addressMode: CPU.prototype.absolute,
+        desc: 'ROR absolute'
       },
       0x70: {
         instruction: CPU.prototype.BVS,
-        addressMode: CPU.prototype.relative
+        text: 'BVS',
+        addressMode: CPU.prototype.relative,
+        desc: 'BVS relative'
       },
       0x71: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.indirectY
+        text: 'ADC',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'ADC indirectY'
       },
       0x75: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.indirectX
+        text: 'ADC',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'ADC indirectX'
       },
       0x76: {
         instruction: CPU.prototype.ROR,
-        addressMode: CPU.prototype.indirectX
+        text: 'ROR',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'ROR indirectX'
       },
       0x78: {
         instruction: CPU.prototype.SEI,
-        addressMode: CPU.prototype.implied
+        text: 'SEI',
+        addressMode: CPU.prototype.implied,
+        desc: 'SEI implied'
       },
       0x79: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.absoluteY
+        text: 'ADC',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'ADC absoluteY'
       },
       0x7D: {
         instruction: CPU.prototype.ADC,
-        addressMode: CPU.prototype.absoluteX
+        text: 'ADC',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'ADC absoluteX'
       },
       0x7E: {
         instruction: CPU.prototype.ROR,
-        addressMode: CPU.prototype.absoluteX
+        text: 'ROR',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'ROR absoluteX'
       },
       0x81: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.indirect
+        text: 'STA',
+        addressMode: CPU.prototype.indirect,
+        desc: 'STA indirect'
       },
       0x82: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.immediate
+        text: 'NOP',
+        addressMode: CPU.prototype.immediate,
+        desc: 'NOP immediate'
       },
       0x84: {
         instruction: CPU.prototype.STY,
-        addressMode: CPU.prototype.zeropage
+        text: 'STY',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'STY zeropage'
       },
       0x85: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.zeropage
+        text: 'STA',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'STA zeropage'
       },
       0x86: {
         instruction: CPU.prototype.STX,
-        addressMode: CPU.prototype.zeropage
+        text: 'STX',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'STX zeropage'
       },
       0x88: {
         instruction: CPU.prototype.DEY,
-        addressMode: CPU.prototype.implied
+        text: 'DEY',
+        addressMode: CPU.prototype.implied,
+        desc: 'DEY implied'
       },
       0x8A: {
         instruction: CPU.prototype.TXA,
-        addressMode: CPU.prototype.implied
+        text: 'TXA',
+        addressMode: CPU.prototype.implied,
+        desc: 'TXA implied'
       },
       0x8C: {
         instruction: CPU.prototype.STY,
-        addressMode: CPU.prototype.absolute
+        text: 'STY',
+        addressMode: CPU.prototype.absolute,
+        desc: 'STY absolute'
       },
       0x8D: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.absolute
+        text: 'STA',
+        addressMode: CPU.prototype.absolute,
+        desc: 'STA absolute'
       },
       0x8E: {
         instruction: CPU.prototype.STX,
-        addressMode: CPU.prototype.absolute
+        text: 'STX',
+        addressMode: CPU.prototype.absolute,
+        desc: 'STX absolute'
       },
       0x90: {
         instruction: CPU.prototype.BCC,
-        addressMode: CPU.prototype.relative
+        text: 'BCC',
+        addressMode: CPU.prototype.relative,
+        desc: 'BCC relative'
       },
       0x91: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.indirectY
+        text: 'STA',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'STA indirectY'
       },
       0x94: {
         instruction: CPU.prototype.STY,
-        addressMode: CPU.prototype.indirectX
+        text: 'STY',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'STY indirectX'
       },
       0x95: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.indirectX
+        text: 'STA',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'STA indirectX'
       },
       0x96: {
         instruction: CPU.prototype.STX,
-        addressMode: CPU.prototype.zeropageY
+        text: 'STX',
+        addressMode: CPU.prototype.zeropageY,
+        desc: 'STX zeropageY'
       },
       0x98: {
         instruction: CPU.prototype.TYA,
-        addressMode: CPU.prototype.implied
+        text: 'TYA',
+        addressMode: CPU.prototype.implied,
+        desc: 'TYA implied'
       },
       0x99: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.absoluteY
+        text: 'STA',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'STA absoluteY'
       },
       0x9A: {
         instruction: CPU.prototype.TXS,
-        addressMode: CPU.prototype.implied
+        text: 'TXS',
+        addressMode: CPU.prototype.implied,
+        desc: 'TXS implied'
       },
       0x9D: {
         instruction: CPU.prototype.STA,
-        addressMode: CPU.prototype.absoluteX
+        text: 'STA',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'STA absoluteX'
       },
       0xA0: {
         instruction: CPU.prototype.LDY,
-        addressMode: CPU.prototype.immediate
+        text: 'LDY',
+        addressMode: CPU.prototype.immediate,
+        desc: 'LDY immediate'
       },
       0xA1: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.indirect
+        text: 'LDA',
+        addressMode: CPU.prototype.indirect,
+        desc: 'LDA indirect'
       },
       0xA2: {
         instruction: CPU.prototype.LDX,
-        addressMode: CPU.prototype.immediate
+        text: 'LDX',
+        addressMode: CPU.prototype.immediate,
+        desc: 'LDX immediate'
       },
       0xA4: {
         instruction: CPU.prototype.LDY,
-        addressMode: CPU.prototype.zeropage
+        text: 'LDY',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'LDY zeropage'
       },
       0xA5: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.zeropage
+        text: 'LDA',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'LDA zeropage'
       },
       0xA6: {
         instruction: CPU.prototype.LDX,
-        addressMode: CPU.prototype.zeropage
+        text: 'LDX',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'LDX zeropage'
       },
       0xA8: {
         instruction: CPU.prototype.TAY,
-        addressMode: CPU.prototype.implied
+        text: 'TAY',
+        addressMode: CPU.prototype.implied,
+        desc: 'TAY implied'
       },
       0xA9: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.immediate
+        text: 'LDA',
+        addressMode: CPU.prototype.immediate,
+        desc: 'LDA immediate'
       },
       0xAA: {
         instruction: CPU.prototype.TAX,
-        addressMode: CPU.prototype.implied
+        text: 'TAX',
+        addressMode: CPU.prototype.implied,
+        desc: 'TAX implied'
       },
       0xAC: {
         instruction: CPU.prototype.LDY,
-        addressMode: CPU.prototype.absolute
+        text: 'LDY',
+        addressMode: CPU.prototype.absolute,
+        desc: 'LDY absolute'
       },
       0xAD: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.absolute
+        text: 'LDA',
+        addressMode: CPU.prototype.absolute,
+        desc: 'LDA absolute'
       },
       0xAE: {
         instruction: CPU.prototype.LDX,
-        addressMode: CPU.prototype.absolute
+        text: 'LDX',
+        addressMode: CPU.prototype.absolute,
+        desc: 'LDX absolute'
       },
       0xB0: {
         instruction: CPU.prototype.BCS,
-        addressMode: CPU.prototype.relative
+        text: 'BCS',
+        addressMode: CPU.prototype.relative,
+        desc: 'BCS relative'
       },
       0xB1: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.indirectY
+        text: 'LDA',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'LDA indirectY'
       },
       0xB4: {
         instruction: CPU.prototype.LDY,
-        addressMode: CPU.prototype.indirectX
+        text: 'LDY',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'LDY indirectX'
       },
       0xB5: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.indirectX
+        text: 'LDA',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'LDA indirectX'
       },
       0xB6: {
         instruction: CPU.prototype.LDX,
-        addressMode: CPU.prototype.zeropageY
+        text: 'LDX',
+        addressMode: CPU.prototype.zeropageY,
+        desc: 'LDX zeropageY'
       },
       0xB8: {
         instruction: CPU.prototype.CLV,
-        addressMode: CPU.prototype.implied
+        text: 'CLV',
+        addressMode: CPU.prototype.implied,
+        desc: 'CLV implied'
       },
       0xB9: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.absoluteY
+        text: 'LDA',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'LDA absoluteY'
       },
       0xBA: {
         instruction: CPU.prototype.TSX,
-        addressMode: CPU.prototype.implied
+        text: 'TSX',
+        addressMode: CPU.prototype.implied,
+        desc: 'TSX implied'
       },
       0xBC: {
         instruction: CPU.prototype.LDY,
-        addressMode: CPU.prototype.absoluteX
+        text: 'LDY',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'LDY absoluteX'
       },
       0xBD: {
         instruction: CPU.prototype.LDA,
-        addressMode: CPU.prototype.absoluteX
+        text: 'LDA',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'LDA absoluteX'
       },
       0xBE: {
         instruction: CPU.prototype.LDX,
-        addressMode: CPU.prototype.absoluteY
+        text: 'LDX',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'LDX absoluteY'
       },
       0xC0: {
         instruction: CPU.prototype.CPY,
-        addressMode: CPU.prototype.immediate
+        text: 'CPY',
+        addressMode: CPU.prototype.immediate,
+        desc: 'CPY immediate'
       },
       0xC1: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.indirect
+        text: 'CMP',
+        addressMode: CPU.prototype.indirect,
+        desc: 'CMP indirect'
       },
       0xC2: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.immediate
+        text: 'NOP',
+        addressMode: CPU.prototype.immediate,
+        desc: 'NOP immediate'
       },
       0xC4: {
         instruction: CPU.prototype.CPY,
-        addressMode: CPU.prototype.zeropage
+        text: 'CPY',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'CPY zeropage'
       },
       0xC5: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.zeropage
+        text: 'CMP',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'CMP zeropage'
       },
       0xC6: {
         instruction: CPU.prototype.DEC,
-        addressMode: CPU.prototype.zeropage
+        text: 'DEC',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'DEC zeropage'
       },
       0xC8: {
         instruction: CPU.prototype.INY,
-        addressMode: CPU.prototype.implied
+        text: 'INY',
+        addressMode: CPU.prototype.implied,
+        desc: 'INY implied'
       },
       0xC9: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.immediate
+        text: 'CMP',
+        addressMode: CPU.prototype.immediate,
+        desc: 'CMP immediate'
       },
       0xCA: {
         instruction: CPU.prototype.DEX,
-        addressMode: CPU.prototype.implied
+        text: 'DEX',
+        addressMode: CPU.prototype.implied,
+        desc: 'DEX implied'
       },
       0xCC: {
         instruction: CPU.prototype.CPY,
-        addressMode: CPU.prototype.absolute
+        text: 'CPY',
+        addressMode: CPU.prototype.absolute,
+        desc: 'CPY absolute'
       },
       0xCD: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.absolute
+        text: 'CMP',
+        addressMode: CPU.prototype.absolute,
+        desc: 'CMP absolute'
       },
       0xCE: {
         instruction: CPU.prototype.DEC,
-        addressMode: CPU.prototype.absolute
+        text: 'DEC',
+        addressMode: CPU.prototype.absolute,
+        desc: 'DEC absolute'
       },
       0xD0: {
         instruction: CPU.prototype.BNE,
-        addressMode: CPU.prototype.relative
+        text: 'BNE',
+        addressMode: CPU.prototype.relative,
+        desc: 'BNE relative'
       },
       0xD1: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.indirectY
+        text: 'CMP',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'CMP indirectY'
       },
       0xD5: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.indirectX
+        text: 'CMP',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'CMP indirectX'
       },
       0xD6: {
         instruction: CPU.prototype.DEC,
-        addressMode: CPU.prototype.indirectX
+        text: 'DEC',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'DEC indirectX'
       },
       0xD8: {
         instruction: CPU.prototype.CLD,
-        addressMode: CPU.prototype.implied
+        text: 'CLD',
+        addressMode: CPU.prototype.implied,
+        desc: 'CLD implied'
       },
       0xD9: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.absoluteY
+        text: 'CMP',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'CMP absoluteY'
       },
       0xDD: {
         instruction: CPU.prototype.CMP,
-        addressMode: CPU.prototype.absoluteX
+        text: 'CMP',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'CMP absoluteX'
       },
       0xDE: {
         instruction: CPU.prototype.DEC,
-        addressMode: CPU.prototype.absoluteX
+        text: 'DEC',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'DEC absoluteX'
       },
       0xE0: {
         instruction: CPU.prototype.CPX,
-        addressMode: CPU.prototype.immediate
+        text: 'CPX',
+        addressMode: CPU.prototype.immediate,
+        desc: 'CPX immediate'
       },
       0xE1: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.indirect
+        text: 'SBC',
+        addressMode: CPU.prototype.indirect,
+        desc: 'SBC indirect'
       },
       0xE2: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.immediate
+        text: 'NOP',
+        addressMode: CPU.prototype.immediate,
+        desc: 'NOP immediate'
       },
       0xE4: {
         instruction: CPU.prototype.CPX,
-        addressMode: CPU.prototype.zeropage
+        text: 'CPX',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'CPX zeropage'
       },
       0xE5: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.zeropage
+        text: 'SBC',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'SBC zeropage'
       },
       0xE6: {
         instruction: CPU.prototype.INC,
-        addressMode: CPU.prototype.zeropage
+        text: 'INC',
+        addressMode: CPU.prototype.zeropage,
+        desc: 'INC zeropage'
       },
       0xE8: {
         instruction: CPU.prototype.INX,
-        addressMode: CPU.prototype.implied
+        text: 'INX',
+        addressMode: CPU.prototype.implied,
+        desc: 'INX implied'
       },
       0xE9: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.immediate
+        text: 'SBC',
+        addressMode: CPU.prototype.immediate,
+        desc: 'SBC immediate'
       },
       0xEA: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.implied
+        text: 'NOP',
+        addressMode: CPU.prototype.implied,
+        desc: 'NOP implied'
       },
       0xEC: {
         instruction: CPU.prototype.CPX,
-        addressMode: CPU.prototype.absolute
+        text: 'CPX',
+        addressMode: CPU.prototype.absolute,
+        desc: 'CPX absolute'
       },
       0xED: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.absolute
+        text: 'SBC',
+        addressMode: CPU.prototype.absolute,
+        desc: 'SBC absolute'
       },
       0xEE: {
         instruction: CPU.prototype.INC,
-        addressMode: CPU.prototype.absolute
+        text: 'INC',
+        addressMode: CPU.prototype.absolute,
+        desc: 'INC absolute'
       },
       0xF0: {
         instruction: CPU.prototype.BEQ,
-        addressMode: CPU.prototype.relative
+        text: 'BEQ',
+        addressMode: CPU.prototype.relative,
+        desc: 'BEQ relative'
       },
       0xF1: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.indirectY
+        text: 'SBC',
+        addressMode: CPU.prototype.indirectY,
+        desc: 'SBC indirectY'
       },
       0xF4: {
         instruction: CPU.prototype.NOP,
-        addressMode: CPU.prototype.zeropageX
+        text: 'NOP',
+        addressMode: CPU.prototype.zeropageX,
+        desc: 'NOP zeropageX'
       },
       0xF5: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.indirectX
+        text: 'SBC',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'SBC indirectX'
       },
       0xF6: {
         instruction: CPU.prototype.INC,
-        addressMode: CPU.prototype.indirectX
+        text: 'INC',
+        addressMode: CPU.prototype.indirectX,
+        desc: 'INC indirectX'
       },
       0xF8: {
         instruction: CPU.prototype.SED,
-        addressMode: CPU.prototype.implied
+        text: 'SED',
+        addressMode: CPU.prototype.implied,
+        desc: 'SED implied'
       },
       0xF9: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.absoluteY
+        text: 'SBC',
+        addressMode: CPU.prototype.absoluteY,
+        desc: 'SBC absoluteY'
       },
       0xFD: {
         instruction: CPU.prototype.SBC,
-        addressMode: CPU.prototype.absoluteX
+        text: 'SBC',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'SBC absoluteX'
       },
       0xFE: {
         instruction: CPU.prototype.INC,
-        addressMode: CPU.prototype.absoluteX
+        text: 'INC',
+        addressMode: CPU.prototype.absoluteX,
+        desc: 'INC absoluteX'
       }
     };
 

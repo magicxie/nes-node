@@ -1,27 +1,29 @@
 should = require 'should'
 nesrom = require '../src/rom'
 cpu2a03 = require '../src/2a03'
+
 ROM = nesrom.ROM
 OPRCODES = cpu2a03.OPRCODES
 
 describe 'When load rom file', ->
 
   rom = new ROM
+  cpu = new cpu2a03.CPU
 
   it 'should no error', ->
     rom.parse 'roms/NES Test Cart (Official Nintendo) (U) [!].nes'
 
   it 'should print valid prg banks', ->
     program = rom.getProgram()
-    #gitconsole.log program
     skip = 0
-    for i,j in program when skip = 0
-      console.log i,j
-      oprcode = OPRCODES[j]
+    for i,j in program
+      oprcode = OPRCODES[i]
       if oprcode
-        skip = oprcode.addressMode.bytes
-        console.log oprcode.instruction.name
-      else
-        skip--
-
-
+        if skip == 0
+          process.stdout.write '\n#line:' +j+ ' 0x' + i.toString(16) + ':' + oprcode.desc + '\n'
+          skip = oprcode.addressMode.call(cpu).bytes
+          process.stdout.write oprcode.text
+        else
+          process.stdout.write ' 0x' + i.toString(16)
+          skip--
+    process.stdout.write '\r\n'
