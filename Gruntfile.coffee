@@ -22,21 +22,48 @@ module.exports = (grunt) ->
         src: ["**/*.coffee"]
         dest: 'test'
         ext: ".js"
-    uglify: {
-      options: {
+    uglify:
+      options:
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-      },
-      build: {
-        src: 'src/<%= pkg.name %>.js',
+
+      build:
+        src: 'src/2a03.js',
         dest: 'build/<%= pkg.name %>.min.js'
-      }
-    }
+
+    blanket:
+      instrument:
+        options:
+          debug: true
+        files:
+          'coverage/src': ['src/'],
+          'coverage/test': ['test/']
+    mochaTest:
+      test:
+        options:
+          timeout: 10000
+          reporter: 'spec'
+        src: ['coverage/test/*.js']
+      coverage:
+        options:
+          reporter: 'mocha-lcov-reporter'
+          quiet: true
+          captureFile: 'coverage/lcov.info'
+        src: ['coverage/src/*.js']
+    coveralls:
+      options:
+        src: 'coverage/lcov.info'
+      default :
+        src: 'coverage/lcov.info'
   }
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.registerTask 'compile', ['coffee']
-
- # Load the plugin that provides the "uglify" task.
-  grunt.loadNpmTasks 'grunt-contrib-uglify';
+  grunt.loadNpmTasks 'grunt-mocha-test'
+  grunt.loadNpmTasks 'grunt-blanket'
+  grunt.loadNpmTasks 'grunt-coveralls'
+  # Load the plugin that provides the "uglify" task.
+  grunt.loadNpmTasks 'grunt-contrib-uglify'
   # Default task(s).
-  grunt.registerTask 'default', ['compile','uglify'];
+  grunt.registerTask 'compile', ['coffee']
+  grunt.registerTask 'test', ['blanket', 'mochaTest']
+
+  grunt.registerTask 'default', ['compile', 'test', 'uglify']

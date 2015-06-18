@@ -4,3 +4,4 @@ projectFilesBackup
 build
 *.js
 *.js.map
+coverage
