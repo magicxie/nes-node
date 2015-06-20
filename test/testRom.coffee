@@ -31,8 +31,10 @@ describe 'When load rom file', ->
 
     it 'should parse sprites', ->
       character = rom.getCharacter()
-      for i,j in character when j % 16 == 0
-        console.log ' ' + i.toString(2)
+      sprites = rom.parseSprite character
+      for spr,j in sprites
+        console.log 'sprite',j
+        console.log spr
 
     it 'should get binary array', ->
       rom.toBinaryArray(0xFF).should.be.eql [1, 1, 1, 1, 1, 1, 1, 1]

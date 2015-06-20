@@ -125,14 +125,22 @@ class ROM
     return character
 
   parseSprite: (character) ->
+    console.log 'There are', character.length / 16, 'sprites'
+    sprites = []
     for i,j in character when j % 16 == 0
-      channelA = character.slice j, 8
-      channelB = characte.slice j + 8, 8
-
-
+      start = j
+      end = j+8
+      channelA = character.slice start,end
+      channelB = character.slice start + 8, end + 8
+      sprite = @combineChannel channelA, channelB
+      sprites.push sprite
+    return sprites
 
   combineChannel: (channelA, channelB) ->
-    channelB[0] + channelA[0]
+    [@compositeHex(channelA[0], channelB[0]), @compositeHex(channelA[1], channelB[1]),
+     @compositeHex(channelA[2], channelB[2]), @compositeHex(channelA[3], channelB[3]),
+     @compositeHex(channelA[4], channelB[4]), @compositeHex(channelA[5], channelB[5]),
+     @compositeHex(channelA[6], channelB[6]), @compositeHex(channelA[7], channelB[7])]
 
   toBinaryArray: (hexString) ->
     (hexString + 0x100).toString(2).substr(1).split('').map (e)-> e * 1;
@@ -141,7 +149,6 @@ class ROM
     binaryA = @toBinaryArray hexA
     binaryB = @toBinaryArray hexB
 
-    console.log hexA,binaryA,hexB,binaryB
     [
       @compositeBit(binaryA[0], binaryB[0]),
       @compositeBit(binaryA[1], binaryB[1]),
