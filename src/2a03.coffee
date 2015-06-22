@@ -123,7 +123,8 @@ class CPU
 
   #IRQ
   IRQ: () ->
-    @interrupt(CPU::VECTOR_TABLE.IRQ)
+    if @I == 0
+      @interrupt(CPU::VECTOR_TABLE.IRQ)
 
   #reset
   RST: () ->
@@ -222,12 +223,15 @@ class CPU
     @cycles += 1;
 
   run: () ->
+
+    #response interruption
+
     oprcode = @ram[@PC]
     oprcodeInfo = CPU::OPRCODES[oprcode]
-    console.log "OPC:", oprcodeInfo.instruction
+    console.log "OPC:", oprcodeInfo.desc
     instruction = oprcodeInfo.instruction
     addressMode = oprcodeInfo.addressMode.call(this, (oprcode + 1))
-    instruction.call(this, addressMode)
+    instruction.call(this, {addressMode : addressMode, operand : addressMode.operand})
 
     #increase PC
     @PC += (addressMode.bytes + 1)
@@ -720,7 +724,7 @@ class CPU
   --------------------------------------------
   absolute      JSR oper      20    3     6
   ###
-  JSP: (stepInfo) ->
+  JSR: (stepInfo) ->
     @push(@PC)
     @PC = stepInfo.operand
 

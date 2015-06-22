@@ -8,6 +8,13 @@ describe 'CPU init', ->
     cpu = new CPU
     cpu.ram.length.should.eql 0x10000
 
+describe 'RAM test', ->
+  it 'should write ram correctly', ->
+    cpu = new CPU
+    cpu.ram[0x8000] = 0xFF
+    cpu.ram[0x8000].should.eql 0xFF
+    cpu.read(0x8000).should.eql 0xFF
+
 describe 'Memory read', ->
 
   cpu = new CPU
@@ -102,12 +109,22 @@ describe 'Interruption', ->
     cpu.PC.should.be.eql 0xABAA
 
   it 'should find IRQ handler', ->
+    cpu.I = 0
     cpu.IRQ()
     cpu.PC.should.be.eql 0xBBBA
 
   it 'should find RST handler', ->
     cpu.RST()
     cpu.PC.should.be.eql 0xCBCA
+
+  describe 'When interrupt is disabled', ->
+
+    cpu.I = 1
+
+    it 'should not trigger IRQ', ->
+      cpu.PC = 0xAB
+      cpu.IRQ()
+      cpu.PC.should.be.eql 0xAB
 
 describe 'Addressing mode', ->
   cpu = new CPU
