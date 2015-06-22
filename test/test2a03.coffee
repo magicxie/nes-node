@@ -8,6 +8,13 @@ describe 'CPU init', ->
     cpu = new CPU
     cpu.ram.length.should.eql 0x10000
 
+describe 'RAM test', ->
+  it 'should write ram correctly', ->
+    cpu = new CPU
+    cpu.ram[0x8000] = 0xFF
+    cpu.ram[0x8000].should.eql 0xFF
+    cpu.read(0x8000).should.eql 0xFF
+
 describe 'Memory read', ->
 
   cpu = new CPU

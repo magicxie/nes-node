@@ -172,5 +172,4 @@ class ROM
   compositeBit: (bitA, bitB) ->
     (bitB << 1) + bitA
 
-
 exports.ROM = ROM

@@ -19,22 +19,21 @@ describe 'When load rom file', ->
       oprcode = OPRCODES[i]
       if oprcode
         if skip == 0
-          #          process.stdout.write '\n#line:' +j+ ' 0x' + i.toString(16) + ':' + oprcode.desc + '\n'
+          process.stdout.write '\n#line:' + j + ' 0x' + i.toString(16) + ':' + oprcode.desc + '\n'
           skip = oprcode.addressMode.call(cpu).bytes
-          #          process.stdout.write oprcode.text
+          process.stdout.write oprcode.text
         else
-          #          process.stdout.write ' 0x' + i.toString(16)
+          process.stdout.write ' 0x' + i.toString(16)
           skip--
     process.stdout.write '\r\n'
 
   describe 'When reading sprites bank', ->
-
     it 'should parse sprites', ->
       character = rom.getCharacter()
       sprites = rom.parseSprite character
-      for spr,j in sprites
-        console.log 'sprite',j
-        console.log spr
+    #      for spr,j in sprites
+    #        console.log 'sprite', j
+    #        console.log spr
 
     it 'should get binary array', ->
       rom.toBinaryArray(0xFF).should.be.eql [1, 1, 1, 1, 1, 1, 1, 1]
@@ -52,3 +51,12 @@ describe 'When load rom file', ->
       rom.compositeBit(1, 0).should.be.eql 1
       rom.compositeBit(0, 1).should.be.eql 2
       rom.compositeBit(1, 1).should.be.eql 3
+
+  describe 'When cpu run', ->
+    it 'should execute rom', ->
+      for i,j in rom.getProgram()
+        cpu.ram[0x8000 + j] = i
+      cpu.PC = 0x8000
+      while cpu.PC < 0x10000
+        console.log cpu.PC, cpu.ram[cpu.PC]
+        cpu.run()

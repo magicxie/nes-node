@@ -224,10 +224,10 @@ class CPU
   run: () ->
     oprcode = @ram[@PC]
     oprcodeInfo = CPU::OPRCODES[oprcode]
-    console.log "OPC:", oprcodeInfo.instruction
+    console.log "OPC:", oprcodeInfo.desc
     instruction = oprcodeInfo.instruction
     addressMode = oprcodeInfo.addressMode.call(this, (oprcode + 1))
-    instruction.call(this, addressMode)
+    instruction.call(this, {addressMode : addressMode, operand : addressMode.operand})
 
     #increase PC
     @PC += (addressMode.bytes + 1)
@@ -720,7 +720,7 @@ class CPU
   --------------------------------------------
   absolute      JSR oper      20    3     6
   ###
-  JSP: (stepInfo) ->
+  JSR: (stepInfo) ->
     @push(@PC)
     @PC = stepInfo.operand
 
