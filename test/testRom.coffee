@@ -57,6 +57,6 @@ describe 'When load rom file', ->
       for i,j in rom.getProgram()
         cpu.ram[0x8000 + j] = i
       cpu.PC = 0x8000
-      while cpu.PC <=133580
+      while cpu.PC <=33580
         console.log cpu.PC, cpu.ram[cpu.PC]
         cpu.run()

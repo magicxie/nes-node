@@ -223,6 +223,9 @@ class CPU
     @cycles += 1;
 
   run: () ->
+
+    #response interruption
+
     oprcode = @ram[@PC]
     oprcodeInfo = CPU::OPRCODES[oprcode]
     console.log "OPC:", oprcodeInfo.desc
