@@ -123,7 +123,8 @@ class CPU
 
   #IRQ
   IRQ: () ->
-    @interrupt(CPU::VECTOR_TABLE.IRQ)
+    if @I == 0
+      @interrupt(CPU::VECTOR_TABLE.IRQ)
 
   #reset
   RST: () ->

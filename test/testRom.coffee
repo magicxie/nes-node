@@ -19,11 +19,11 @@ describe 'When load rom file', ->
       oprcode = OPRCODES[i]
       if oprcode
         if skip == 0
-          process.stdout.write '\n#line:' + j + ' 0x' + i.toString(16) + ':' + oprcode.desc + '\n'
+#          process.stdout.write '\n#line:' + j + ' 0x' + i.toString(16) + ':' + oprcode.desc + '\n'
           skip = oprcode.addressMode.call(cpu).bytes
-          process.stdout.write oprcode.text
+#          process.stdout.write oprcode.text
         else
-          process.stdout.write ' 0x' + i.toString(16)
+#          process.stdout.write ' 0x' + i.toString(16)
           skip--
     process.stdout.write '\r\n'
 
@@ -57,6 +57,6 @@ describe 'When load rom file', ->
       for i,j in rom.getProgram()
         cpu.ram[0x8000 + j] = i
       cpu.PC = 0x8000
-      while cpu.PC < 0x10000
+      while cpu.PC <=133580
         console.log cpu.PC, cpu.ram[cpu.PC]
         cpu.run()

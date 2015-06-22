@@ -120,12 +120,21 @@
       return cpu.PC.should.be.eql(0xABAA);
     });
     it('should find IRQ handler', function() {
+      cpu.I = 0;
       cpu.IRQ();
       return cpu.PC.should.be.eql(0xBBBA);
     });
-    return it('should find RST handler', function() {
+    it('should find RST handler', function() {
       cpu.RST();
       return cpu.PC.should.be.eql(0xCBCA);
+    });
+    return describe('When interrupt is disabled', function() {
+      cpu.I = 1;
+      return it('should not trigger IRQ', function() {
+        cpu.PC = 0xAB;
+        cpu.IRQ();
+        return cpu.PC.should.be.eql(0xAB);
+      });
     });
   });
 

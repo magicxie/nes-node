@@ -109,12 +109,22 @@ describe 'Interruption', ->
     cpu.PC.should.be.eql 0xABAA
 
   it 'should find IRQ handler', ->
+    cpu.I = 0
     cpu.IRQ()
     cpu.PC.should.be.eql 0xBBBA
 
   it 'should find RST handler', ->
     cpu.RST()
     cpu.PC.should.be.eql 0xCBCA
+
+  describe 'When interrupt is disabled', ->
+
+    cpu.I = 1
+
+    it 'should not trigger IRQ', ->
+      cpu.PC = 0xAB
+      cpu.IRQ()
+      cpu.PC.should.be.eql 0xAB
 
 describe 'Addressing mode', ->
   cpu = new CPU

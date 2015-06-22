@@ -139,7 +139,9 @@
     };
 
     CPU.prototype.IRQ = function() {
-      return this.interrupt(CPU.prototype.VECTOR_TABLE.IRQ);
+      if (this.I === 0) {
+        return this.interrupt(CPU.prototype.VECTOR_TABLE.IRQ);
+      }
     };
 
     CPU.prototype.RST = function() {
